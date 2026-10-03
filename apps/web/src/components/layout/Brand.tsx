@@ -7,13 +7,13 @@ export function Brand({ href = '/', className }: { href?: string; className?: st
     <Link
       href={href}
       className={cn(
-        'inline-flex items-center gap-2 rounded-md font-display text-[19px] font-semibold tracking-tight text-ink',
+        'inline-flex min-w-0 items-center gap-2 rounded-md font-display text-[17px] font-semibold leading-tight tracking-tight text-ink sm:text-[19px]',
         className,
       )}
     >
       <span
         aria-hidden
-        className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-brand text-white shadow-xs"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-brand text-white shadow-xs"
       >
         <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none">
           <path
@@ -22,7 +22,7 @@ export function Brand({ href = '/', className }: { href?: string; className?: st
           />
         </svg>
       </span>
-      {APP_NAME}
+      <span className="min-w-0">{APP_NAME}</span>
     </Link>
   );
 }

@@ -9,6 +9,7 @@ const NAV = [
   { href: '/#features', label: 'Features' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/#faq', label: 'FAQ' },
+  { href: '/contact', label: 'Contact' },
 ];
 
 const FOOTER = [
@@ -25,6 +26,7 @@ const FOOTER = [
     links: [
       { href: '/signup', label: 'Create an account' },
       { href: '/login', label: 'Log in' },
+      { href: '/contact', label: 'Contact us' },
     ],
   },
   {
@@ -43,7 +45,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-line/80 bg-paper/85 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between gap-4">
           <Brand />
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
             {NAV.map((item) => (
               <Link
                 key={item.href}
@@ -57,18 +59,18 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-white md:block"
+              className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-white lg:block"
             >
               Log in
             </Link>
-            <PushButton href="/signup" size="sm">
+            <PushButton href="/signup" size="sm" className="hidden min-[360px]:inline-flex">
               Start free
             </PushButton>
           </div>
         </div>
         {/* Phones: the same links in a row under the bar */}
         <nav
-          className="flex flex-wrap items-center justify-center gap-x-1 border-t border-line/80 px-3 py-1 md:hidden"
+          className="flex flex-wrap items-center justify-center gap-x-1 border-t border-line/80 px-3 py-1 lg:hidden"
           aria-label="Main"
         >
           {[...NAV, { href: '/login', label: 'Log in' }].map((item) => (
@@ -114,7 +116,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
         </div>
         <div className="border-t border-line">
           <p className="container py-5 text-[13px] text-ink-soft">
-            © {new Date().getFullYear()} {APP_NAME}. Not affiliated with Instagram or Meta.
+            © {APP_NAME}. All rights reserved. Not affiliated with Instagram or Meta.
           </p>
         </div>
       </footer>

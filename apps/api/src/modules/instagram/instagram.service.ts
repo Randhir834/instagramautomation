@@ -52,8 +52,9 @@ export class InstagramService {
   buildAuthorizeUrl(userId: string): string {
     const meta = this.config.get('meta', { infer: true });
     if (!meta.appId || !meta.appSecret) {
+      this.logger.error('Instagram app keys are missing: set META_APP_ID and META_APP_SECRET');
       throw new ServiceUnavailableException(
-        'Instagram is not configured yet. Add META_APP_ID and META_APP_SECRET.',
+        'Connecting Instagram is not available right now. Please try again later.',
       );
     }
     const payload = `${userId}.${Date.now() + STATE_TTL_MS}.${randomBytes(8).toString('hex')}`;

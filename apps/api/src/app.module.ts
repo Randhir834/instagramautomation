@@ -11,6 +11,7 @@ import { AutomationsModule } from './modules/automations/automations.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { BookingModule } from './modules/booking/booking.module';
 import { ComplianceModule } from './modules/compliance/compliance.module';
+import { ContactModule } from './modules/contact/contact.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { EmailModule } from './modules/email/email.module';
 import { InstagramModule } from './modules/instagram/instagram.module';
@@ -57,6 +58,7 @@ export const coreModules = [
     EmailModule,
     AnalyticsModule,
     ComplianceModule,
+    ContactModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

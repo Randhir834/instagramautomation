@@ -16,8 +16,9 @@ export default function PrivacyPage() {
       <h2>What we collect</h2>
       <p>
         When you connect an Instagram account, {APP_NAME} receives your Instagram user ID, username
-        and an access token. When followers interact with your automations we store their
-        Instagram-scoped ID, username, and any email or phone number they choose to share.
+        and a secure key that lets us reply on your behalf. When followers interact with your
+        automations we store their Instagram ID, username, and any email or phone number they choose
+        to share.
       </p>
       <p>
         For your own account we store your name, email address and, if you sell or book through
@@ -34,8 +35,8 @@ export default function PrivacyPage() {
 
       <h2>How we protect it</h2>
       <p>
-        Instagram access tokens are encrypted before they are stored. Payments are processed by
-        Razorpay; we never see or store card details.
+        Your Instagram connection is stored encrypted, and you can remove it at any time. Payments
+        are handled by a secure payment provider; we never see or store card details.
       </p>
 
       <h2>Deleting your data</h2>

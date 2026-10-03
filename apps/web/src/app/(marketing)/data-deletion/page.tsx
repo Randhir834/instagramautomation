@@ -18,8 +18,8 @@ export default function DataDeletionPage() {
       <ol>
         <li>Log in and open “Instagram” in the dashboard.</li>
         <li>
-          Press “Disconnect” next to the account. Its access token, automations, contacts and
-          message history are deleted straight away.
+          Press “Disconnect” next to the account. Its connection, automations, contacts and message
+          history are deleted straight away.
         </li>
       </ol>
 

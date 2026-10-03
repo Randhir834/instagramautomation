@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Handlebars from 'handlebars';
 import puppeteer from 'puppeteer-core';
@@ -22,6 +22,7 @@ const BROWSER_CANDIDATES = [
 /** Renders a Handlebars template to HTML and prints it to PDF with headless Chrome. */
 @Injectable()
 export class PdfService {
+  private readonly logger = new Logger(PdfService.name);
   private readonly templates = new Map<string, Handlebars.TemplateDelegate>();
 
   constructor(private readonly config: ConfigService<AppConfig, true>) {}
@@ -30,8 +31,9 @@ export class PdfService {
     const configured = this.config.get('chromePath', { infer: true });
     const found = configured || BROWSER_CANDIDATES.find((path) => existsSync(path));
     if (!found) {
+      this.logger.error('No Chrome/Chromium found: set PUPPETEER_EXECUTABLE_PATH');
       throw new ServiceUnavailableException(
-        'PDF generation needs Chrome. Set PUPPETEER_EXECUTABLE_PATH to its location.',
+        'The PDF could not be created right now. Please try again later.',
       );
     }
     return found;

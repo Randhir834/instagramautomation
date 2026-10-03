@@ -28,7 +28,7 @@ function readFlash(): Flash | null {
   if (connected && params.get('warning') === 'webhooks') {
     return {
       tone: 'warning',
-      text: `@${connected} is connected, but Instagram did not confirm event delivery. Disconnect and connect again if automations do not fire.`,
+      text: `@${connected} is connected, but setup did not fully finish. If your automations don’t respond, disconnect and connect again.`,
     };
   }
   if (connected) return { tone: 'success', text: `@${connected} is connected.` };
@@ -140,8 +140,8 @@ export default function AccountsPage() {
       <div className="mt-6 flex items-start gap-3 rounded-xl bg-white/60 px-5 py-4 text-sm text-ink-soft ring-1 ring-line">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-moss" />
         <p>
-          We connect through Instagram&apos;s official API. Your access token is encrypted before it
-          is stored, and disconnecting deletes everything we hold for that account.
+          Your connection is private and secure. We never see your Instagram password, and
+          disconnecting deletes everything we hold for that account.
         </p>
       </div>
     </>

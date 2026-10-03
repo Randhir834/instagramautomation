@@ -15,7 +15,7 @@ export default function TermsPage() {
       <h2>Using {APP_NAME}</h2>
       <p>
         You must own, or be allowed to manage, the Instagram accounts you connect. You must also
-        follow Instagram’s and Meta’s platform policies, including their messaging rules.
+        follow Instagram’s rules, including its rules on messaging.
       </p>
 
       <h2>Plans and payments</h2>
@@ -28,7 +28,7 @@ export default function TermsPage() {
       <h2>Your store</h2>
       <p>
         You are responsible for the products you sell and for delivering what you promise. Payments
-        go to your own Razorpay account.
+        go to your own payment account.
       </p>
 
       <h2>Fair use</h2>

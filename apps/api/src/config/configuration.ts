@@ -49,6 +49,8 @@ export default function configuration() {
       resendApiKey: env.RESEND_API_KEY ?? '',
       from: env.EMAIL_FROM ?? '',
       apiUrl: env.RESEND_API_URL || 'https://api.resend.com',
+      /** Where messages from the website's contact form go. */
+      support: env.SUPPORT_EMAIL ?? '',
     },
     sentryDsn: env.SENTRY_DSN ?? '',
     chromePath: env.PUPPETEER_EXECUTABLE_PATH ?? '',

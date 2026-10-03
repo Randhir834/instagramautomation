@@ -69,7 +69,8 @@ export class AuthService {
   /** Returns Google's consent URL and stores a random `state` in a short-lived cookie. */
   startGoogle(res: Response): string {
     const { googleClientId } = this.config.get('auth', { infer: true });
-    if (!googleClientId) throw new ServiceUnavailableException('Google login is not configured');
+    if (!googleClientId)
+      throw new ServiceUnavailableException('Google sign-in is not available right now.');
     const state = randomBytes(24).toString('base64url');
     res.cookie(GOOGLE_STATE_COOKIE, state, { ...this.cookieOptions(), maxAge: 10 * 60 * 1000 });
     const params = new URLSearchParams({

@@ -1,5 +1,5 @@
 import { PLAN_LIMITS } from '@repo/shared';
-import { Check, Plus, ShieldCheck } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 import type { ReactNode } from 'react';
 import {
   ConnectMock,
@@ -99,8 +99,8 @@ const MONEY = [
 
 const FAQ = [
   {
-    q: 'Will this get my account banned?',
-    a: `${APP_NAME} talks to Instagram through Meta’s official API, the one Meta gives businesses for exactly this. No password sharing, no browser bots, no scraping. We also stick to Meta’s messaging limits, which is why a few things below are deliberately not possible.`,
+    q: 'Is it safe for my Instagram account?',
+    a: `Yes. ${APP_NAME} is built to stay within Instagram’s rules: no password sharing, no bots and no scraping. It also follows Instagram’s messaging rules, which is why a few things below are deliberately not possible.`,
   },
   {
     q: 'What kind of Instagram account do I need?',
@@ -116,7 +116,7 @@ const FAQ = [
   },
   {
     q: 'How do payments for my products work?',
-    a: 'Buyers pay through Razorpay (UPI, cards, netbanking). Once the payment is confirmed they get a private download link by email. You’ll need your own Razorpay account with KYC completed.',
+    a: 'Buyers pay by UPI, card or netbanking through a secure checkout. Once the payment is confirmed, they get a private download link by email. To get paid, you connect your own payment account once (KYC is needed in India).',
   },
   {
     q: 'Can I take my contacts with me?',
@@ -162,8 +162,8 @@ export default function LandingPage() {
         <div className="container relative grid items-center gap-12 pb-16 pt-12 lg:grid-cols-[1.05fr_1fr] lg:pb-24 lg:pt-20 [&>*]:min-w-0">
           <div className="animate-fade-up">
             <p className="inline-flex items-center gap-2 rounded-full border border-line bg-white px-3 py-1 text-[13px] font-medium text-ink-soft shadow-xs">
-              <ShieldCheck className="h-3.5 w-3.5 text-moss" />
-              Built on Instagram’s official API
+              <span className="h-1.5 w-1.5 rounded-full bg-moss" aria-hidden />
+              Made for Instagram creators
             </p>
             <h1 className="mt-6 font-display text-[44px] font-medium leading-[1.04] tracking-tight text-balance sm:text-display-lg lg:text-display-xl">
               They comment{' '}
@@ -378,7 +378,7 @@ export default function LandingPage() {
       </section>
 
       {/* ---------- FAQ ---------- */}
-      <section id="faq" className="scroll-mt-32 border-t border-line bg-white md:scroll-mt-20">
+      <section id="faq" className="scroll-mt-32 border-t border-line bg-white lg:scroll-mt-20">
         <div className="container grid gap-12 py-20 lg:grid-cols-[1fr_1.6fr] lg:py-28 [&>*]:min-w-0">
           <div>
             <Eyebrow>Questions</Eyebrow>

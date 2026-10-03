@@ -47,6 +47,7 @@ export const envSchema = z.object({
 
   RESEND_API_KEY: optional,
   EMAIL_FROM: optional,
+  SUPPORT_EMAIL: optional,
 
   SENTRY_DSN: optional,
 

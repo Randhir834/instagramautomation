@@ -108,7 +108,7 @@ export function BuyBox({ productId, priceInPaise }: { productId: string; priceIn
           {busy ? 'Please wait…' : `Buy for ${formatMoney(priceInPaise)}`}
         </Button>
         <p className="flex items-center justify-center gap-1.5 text-[13px] text-ink-soft">
-          <Lock className="h-3.5 w-3.5" /> UPI, cards and netbanking · secured by Razorpay
+          <Lock className="h-3.5 w-3.5" /> Secure checkout · UPI, cards and netbanking
         </p>
       </form>
     </Card>

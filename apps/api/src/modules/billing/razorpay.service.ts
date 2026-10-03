@@ -1,4 +1,9 @@
-import { BadGatewayException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { verifyHmacSha256 } from '../../common/utils/hmac';
 import type { AppConfig } from '../../config/configuration';
@@ -23,6 +28,8 @@ export interface RazorpayOrder {
  */
 @Injectable()
 export class RazorpayService {
+  private readonly logger = new Logger(RazorpayService.name);
+
   constructor(private readonly config: ConfigService<AppConfig, true>) {}
 
   private get rzp() {
@@ -40,8 +47,9 @@ export class RazorpayService {
 
   private async request<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
     if (!this.isConfigured) {
+      this.logger.error('Razorpay keys are missing: set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
       throw new ServiceUnavailableException(
-        'Payments are not configured yet. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.',
+        'Payments are not available right now. Please try again later.',
       );
     }
     const auth = Buffer.from(`${this.rzp.keyId}:${this.rzp.keySecret}`).toString('base64');
@@ -53,7 +61,10 @@ export class RazorpayService {
     });
     const json = (await res.json().catch(() => ({}))) as { error?: { description?: string } };
     if (!res.ok) {
-      throw new BadGatewayException(json.error?.description ?? 'Razorpay request failed');
+      this.logger.error(
+        `Razorpay ${method} ${path} failed: ${res.status} ${json.error?.description ?? ''}`,
+      );
+      throw new BadGatewayException('The payment could not be started. Please try again.');
     }
     return json as T;
   }

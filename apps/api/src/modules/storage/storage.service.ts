@@ -1,6 +1,6 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfig } from '../../config/configuration';
 
@@ -10,6 +10,7 @@ import type { AppConfig } from '../../config/configuration';
  */
 @Injectable()
 export class StorageService {
+  private readonly logger = new Logger(StorageService.name);
   private client?: S3Client;
 
   constructor(private readonly config: ConfigService<AppConfig, true>) {}
@@ -25,8 +26,9 @@ export class StorageService {
 
   private s3(): S3Client {
     if (!this.isConfigured) {
+      this.logger.error('File storage keys are missing: set the R2_* variables');
       throw new ServiceUnavailableException(
-        'File storage is not configured yet. Add the R2_* variables.',
+        'File uploads are not available right now. Please try again later.',
       );
     }
     this.client ??= new S3Client({
