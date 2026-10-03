@@ -1,0 +1,362 @@
+// Prisma schema: see PROJECT_SPEC.md section 5.
+// Money is stored as integers in the smallest currency unit (paise for INR).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum Plan {
+  FREE
+  TRIAL
+  PREMIUM
+  PROFESSIONAL
+}
+
+enum TriggerType {
+  COMMENT
+  DM_KEYWORD
+  STORY_REPLY
+}
+
+enum MatchType {
+  CONTAINS
+  EXACT
+}
+
+enum StepType {
+  SEND_MESSAGE
+  QUICK_REPLIES
+  FOLLOW_GATE
+  COLLECT_EMAIL
+  COLLECT_PHONE
+}
+
+enum FlowStatus {
+  ACTIVE
+  WAITING_INPUT
+  DONE
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageKind {
+  PRIVATE_REPLY
+  COMMENT_REPLY
+  DM
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+enum SubscriptionStatus {
+  CREATED
+  AUTHENTICATED
+  ACTIVE
+  PENDING
+  HALTED
+  CANCELLED
+  COMPLETED
+  EXPIRED
+}
+
+enum OrderStatus {
+  CREATED
+  PAID
+  FAILED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  VOID
+}
+
+enum WebhookSource {
+  META
+  RAZORPAY
+}
+
+// ---------- Users & accounts ----------
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  passwordHash       String?
+  googleId           String?   @unique
+  name               String
+  /// Used for public URLs: /s/{username}, /book/{username}
+  username           String    @unique
+  plan               Plan      @default(FREE)
+  planExpiresAt      DateTime?
+  razorpayCustomerId String?
+  createdAt          DateTime  @default(now())
+
+  instagramAccounts InstagramAccount[]
+  usageCounters     UsageCounter[]
+  subscriptions     Subscription[]
+  products          Product[]
+  bookingSlots      BookingSlot[]
+  invoices          Invoice[]
+}
+
+model InstagramAccount {
+  id                   String   @id @default(cuid())
+  userId               String
+  igUserId             String   @unique
+  username             String
+  /// AES-256-GCM ciphertext; never store the raw token.
+  encryptedAccessToken String
+  tokenExpiresAt       DateTime
+  isActive             Boolean  @default(true)
+  connectedAt          DateTime @default(now())
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  automations Automation[]
+  contacts    Contact[]
+  messageLogs MessageLog[]
+
+  @@index([userId])
+  @@index([tokenExpiresAt])
+}
+
+// ---------- Automations ----------
+
+model Automation {
+  id            String      @id @default(cuid())
+  igAccountId   String
+  name          String
+  isActive      Boolean     @default(true)
+  triggerType   TriggerType @default(COMMENT)
+  /// null = applies to all posts
+  postId        String?
+  keywords      String[]
+  matchType     MatchType   @default(CONTAINS)
+  publicReplies String[]
+  createdAt     DateTime    @default(now())
+
+  igAccount   InstagramAccount @relation(fields: [igAccountId], references: [id], onDelete: Cascade)
+  steps       AutomationStep[]
+  flowStates  FlowState[]
+  messageLogs MessageLog[]
+
+  @@index([igAccountId])
+  @@index([igAccountId, isActive, triggerType])
+  @@index([keywords], type: Gin)
+}
+
+model AutomationStep {
+  id           String   @id @default(cuid())
+  automationId String
+  order        Int
+  type         StepType
+  payload      Json     @default("{}")
+
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@unique([automationId, order])
+  @@index([automationId])
+}
+
+// ---------- Contacts & flows ----------
+
+model Contact {
+  id                String   @id @default(cuid())
+  igAccountId       String
+  /// Instagram-scoped user id (IGSID) of the follower
+  igScopedUserId    String
+  username          String?
+  email             String?
+  phone             String?
+  tags              String[]
+  lastInteractionAt DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  igAccount   InstagramAccount @relation(fields: [igAccountId], references: [id], onDelete: Cascade)
+  flowStates  FlowState[]
+  messageLogs MessageLog[]
+
+  @@unique([igAccountId, igScopedUserId])
+  @@index([igAccountId])
+}
+
+model FlowState {
+  id           String     @id @default(cuid())
+  contactId    String
+  automationId String
+  currentStep  Int        @default(0)
+  status       FlowStatus @default(ACTIVE)
+  expiresAt    DateTime
+
+  contact    Contact    @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([contactId])
+  @@index([automationId])
+  @@index([contactId, status])
+}
+
+model MessageLog {
+  id           String           @id @default(cuid())
+  igAccountId  String
+  contactId    String
+  automationId String?
+  direction    MessageDirection
+  kind         MessageKind
+  status       MessageStatus    @default(QUEUED)
+  error        String?
+  createdAt    DateTime         @default(now())
+
+  igAccount  InstagramAccount @relation(fields: [igAccountId], references: [id], onDelete: Cascade)
+  contact    Contact          @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  automation Automation?      @relation(fields: [automationId], references: [id], onDelete: SetNull)
+
+  @@index([igAccountId, createdAt])
+  @@index([contactId])
+  @@index([automationId])
+}
+
+// ---------- Billing ----------
+
+model UsageCounter {
+  id      String @id @default(cuid())
+  userId  String
+  /// YYYY-MM (UTC)
+  month   String
+  dmCount Int    @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@index([userId])
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String
+  razorpaySubscriptionId String             @unique
+  plan                   Plan
+  status                 SubscriptionStatus @default(CREATED)
+  currentPeriodEnd       DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------- Store ----------
+
+model Product {
+  id            String  @id @default(cuid())
+  userId        String
+  title         String
+  description   String  @default("")
+  priceInPaise  Int
+  /// Object key in R2
+  fileKey       String
+  coverImageUrl String?
+  isPublished   Boolean @default(false)
+  slug          String
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@unique([userId, slug])
+  @@index([userId])
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  productId         String
+  buyerEmail        String
+  buyerName         String?
+  amountInPaise     Int
+  razorpayOrderId   String      @unique
+  razorpayPaymentId String?
+  status            OrderStatus @default(CREATED)
+  downloadToken     String      @unique
+  createdAt         DateTime    @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([productId])
+}
+
+// ---------- Booking ----------
+
+model BookingSlot {
+  id       String   @id @default(cuid())
+  userId   String
+  startsAt DateTime
+  endsAt   DateTime
+  isBooked Boolean  @default(false)
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking?
+
+  @@index([userId, startsAt])
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  slotId     String        @unique
+  guestName  String
+  guestEmail String
+  note       String?
+  status     BookingStatus @default(CONFIRMED)
+
+  slot BookingSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Invoices ----------
+
+model Invoice {
+  id          String        @id @default(cuid())
+  userId      String
+  number      String
+  clientName  String
+  clientEmail String?
+  /// Array of { description, quantity, unitPrice }
+  items       Json
+  currency    String        @default("INR")
+  taxPercent  Decimal       @default(0) @db.Decimal(5, 2)
+  /// Smallest currency unit, tax included
+  total       Int
+  status      InvoiceStatus @default(DRAFT)
+  issuedAt    DateTime      @default(now())
+  pdfKey      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, number])
+  @@index([userId])
+}
+
+// ---------- Webhooks ----------
+
+/// Durable backup to the Redis dedupe; id is the provider's event id.
+model ProcessedWebhook {
+  id        String        @id
+  source    WebhookSource
+  createdAt DateTime      @default(now())
+
+  @@index([createdAt])
+}

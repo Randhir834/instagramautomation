@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.next/
+.next-*/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# env files (commit only .env.example)
+.env
+.env.*
+!.env.example
+
+# logs / OS
+*.log
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

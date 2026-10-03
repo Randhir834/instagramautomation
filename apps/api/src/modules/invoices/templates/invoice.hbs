@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <title>Invoice {{number}}</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Helvetica, Arial, sans-serif;
+        color: #111827;
+        margin: 48px;
+        font-size: 14px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+      }
+      h1 {
+        font-size: 28px;
+        margin: 0;
+        letter-spacing: 1px;
+      }
+      .muted {
+        color: #6b7280;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 24px;
+      }
+      th {
+        text-align: left;
+        border-bottom: 2px solid #111827;
+        padding: 8px 4px;
+      }
+      td {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 8px 4px;
+      }
+      .num {
+        text-align: right;
+      }
+      .totals {
+        margin-top: 24px;
+        margin-left: auto;
+        width: 260px;
+      }
+      .totals div {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+      }
+      .totals .grand {
+        font-weight: bold;
+        font-size: 16px;
+        border-top: 2px solid #111827;
+        margin-top: 8px;
+        padding-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>INVOICE</h1>
+        <div class='muted'>#{{number}}</div>
+      </div>
+      <div style='text-align: right'>
+        <strong>{{sellerName}}</strong>
+        <div class='muted'>Issued {{issuedAt}}</div>
+      </div>
+    </header>
+
+    <section>
+      <div class='muted'>Billed to</div>
+      <strong>{{clientName}}</strong>
+      {{#if clientEmail}}<div>{{clientEmail}}</div>{{/if}}
+    </section>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class='num'>Qty</th>
+          <th class='num'>Unit price</th>
+          <th class='num'>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each items}}
+          <tr>
+            <td>{{this.description}}</td>
+            <td class='num'>{{this.quantity}}</td>
+            <td class='num'>{{this.unitPrice}}</td>
+            <td class='num'>{{this.amount}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class='totals'>
+      <div><span>Subtotal</span><span>{{subtotal}}</span></div>
+      <div><span>Tax ({{taxPercent}}%)</span><span>{{tax}}</span></div>
+      <div class='grand'><span>Total ({{currency}})</span><span>{{total}}</span></div>
+    </div>
+  </body>
+</html>
