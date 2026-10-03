@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 const KEYWORDS = ['price', 'link', 'recipe'];
 const SUGGESTIONS = ['PRICE?', 'omg link please', 'this looks amazing', 'Recipe!!'];
@@ -17,15 +18,18 @@ export function KeywordDemo() {
   const isEmpty = comment.trim() === '';
 
   return (
-    <div className="slab rounded-3xl bg-white p-5 sm:p-7">
+    <div className="rounded-2xl border border-line bg-white p-5 text-ink shadow-pop sm:p-7">
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-ink/75">This automation listens for</span>
+        <span className="text-ink-soft">This automation listens for</span>
         {KEYWORDS.map((k) => (
           <span
             key={k}
-            className={`rounded-md border-2 px-2.5 py-0.5 font-semibold transition-colors ${
-              matched === k ? 'border-ink bg-butter' : 'border-ink/25 text-ink/75'
-            }`}
+            className={cn(
+              'rounded-md px-2.5 py-0.5 font-semibold transition-colors',
+              matched === k
+                ? 'bg-butter text-ink'
+                : 'bg-paper text-ink-soft ring-1 ring-inset ring-line',
+            )}
           >
             {k}
           </span>
@@ -42,56 +46,57 @@ export function KeywordDemo() {
         maxLength={80}
         autoComplete="off"
         placeholder="Type anything…"
-        className="mt-2 w-full rounded-xl border-2 border-ink bg-paper px-3 py-3 text-base outline-none placeholder:text-ink/60 focus:bg-white focus:ring-4 focus:ring-sky/30"
+        className="mt-2 h-12 w-full rounded-[10px] border border-line-strong bg-white px-3.5 text-base shadow-xs outline-none transition-[border-color,box-shadow] placeholder:text-ink-soft/70 focus:border-brand focus:ring-4 focus:ring-brand/15"
       />
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
         {SUGGESTIONS.map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setComment(s)}
-            className="rounded-lg border-2 border-ink bg-paper px-2.5 py-1 text-xs font-semibold shadow-[0_2px_0_0_#1a1714] transition-[transform,box-shadow] duration-100 hover:bg-butter active:translate-y-[2px] active:shadow-none"
+            className="rounded-full border border-line-strong bg-white px-3 py-1 text-xs font-medium text-ink transition-colors hover:border-ink hover:bg-paper"
           >
             {s}
           </button>
         ))}
       </div>
 
-      <div
-        className="mt-6 min-h-[9.5rem] border-t border-dashed border-ink/25 pt-5"
-        aria-live="polite"
-      >
+      <div className="mt-6 min-h-[9.5rem] border-t border-line pt-5" aria-live="polite">
         {isEmpty ? (
-          <p className="text-sm text-ink/75">Waiting for a comment.</p>
+          <p className="text-sm text-ink-soft">Waiting for a comment.</p>
         ) : matched ? (
-          <ol className="space-y-3 text-sm">
+          <ol className="space-y-3.5 text-sm">
             <li className="flex gap-3">
-              <span className="mt-0.5 font-display text-brand">1</span>
-              <p>
-                <span className="text-ink/75">Public reply under the comment</span>
-                <span className="mt-1 block w-fit rounded-lg bg-paper px-3 py-1.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
+                1
+              </span>
+              <div>
+                <p className="text-ink-soft">Public reply under the comment</p>
+                <p className="mt-1 w-fit rounded-xl bg-paper px-3 py-1.5 ring-1 ring-line">
                   Sent it to your DMs!
-                </span>
-              </p>
+                </p>
+              </div>
             </li>
             <li className="flex gap-3">
-              <span className="mt-0.5 font-display text-brand">2</span>
-              <p>
-                <span className="text-ink/75">Private message</span>
-                <span className="mt-1 block w-fit rounded-2xl rounded-bl-sm bg-sky px-3 py-1.5 text-white">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
+                2
+              </span>
+              <div>
+                <p className="text-ink-soft">Private message</p>
+                <p className="mt-1 w-fit rounded-2xl rounded-bl-md bg-sky px-3 py-1.5 text-white">
                   {matched === 'recipe'
                     ? 'Here is the full recipe card. Want the shopping list too?'
                     : 'Here you go. It is ₹499 and the link is below.'}
-                </span>
-              </p>
+                </p>
+              </div>
             </li>
           </ol>
         ) : (
           <div className="text-sm">
-            <p className="font-medium">Nothing is sent.</p>
-            <p className="mt-1 max-w-sm text-ink/75">
-              No keyword in that comment, so the automation stays quiet. Your followers only hear
-              from you when they asked to.
+            <p className="font-semibold">Nothing is sent.</p>
+            <p className="mt-1 max-w-sm text-ink-soft">
+              No keyword in that comment, so the automation stays quiet. Followers only hear from
+              you when they asked to.
             </p>
           </div>
         )}

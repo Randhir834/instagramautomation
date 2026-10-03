@@ -4,17 +4,18 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 const VARIANTS = {
-  brand: 'bg-brand text-white [--edge:#1a1714]',
-  butter: 'bg-butter text-ink [--edge:#1a1714]',
-  paper: 'bg-paper text-ink [--edge:#1a1714]',
-  white: 'bg-white text-ink [--edge:#1a1714]',
-  ink: 'bg-ink text-paper [--edge:#c93a1e]',
+  brand:
+    'bg-brand text-white shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_6px_16px_-6px_rgba(196,61,34,0.55)] hover:bg-brand-dark',
+  ink: 'bg-ink text-white shadow-[0_6px_16px_-6px_rgba(28,25,23,0.5)] hover:bg-[#33302c]',
+  white:
+    'border border-line-strong bg-white text-ink shadow-xs hover:border-[#bfb6a6] hover:bg-paper',
+  paper: 'bg-white text-ink shadow-[0_6px_16px_-6px_rgba(0,0,0,0.35)] hover:bg-paper',
 } as const;
 
 const SIZES = {
-  sm: 'px-4 py-2 text-sm [--depth:3px]',
-  md: 'px-6 py-3 text-base [--depth:5px]',
-  lg: 'px-8 py-4 text-lg [--depth:6px]',
+  sm: 'min-h-9 px-4 py-2 text-sm',
+  md: 'min-h-11 px-5 py-2.5 text-[15px]',
+  lg: 'min-h-12 px-6 py-3 text-base',
 } as const;
 
 interface PushButtonProps {
@@ -27,10 +28,7 @@ interface PushButtonProps {
   className?: string;
 }
 
-/**
- * The marketing site's button: a key you can press.
- * It sits on a solid edge, lifts a little on hover and sinks flat when clicked.
- */
+/** Call-to-action link used across the marketing site. */
 export function PushButton({
   href,
   children,
@@ -43,11 +41,9 @@ export function PushButton({
     <Link
       href={href}
       className={cn(
-        'group inline-flex select-none items-center justify-center gap-2 rounded-xl border-2 border-ink text-center font-bold leading-tight',
-        'shadow-[0_var(--depth)_0_0_var(--edge)] transition-[transform,box-shadow] duration-100 ease-out',
-        'hover:-translate-y-0.5 hover:shadow-[0_calc(var(--depth)+2px)_0_0_var(--edge)]',
-        'active:translate-y-[var(--depth)] active:shadow-none',
-        'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sky/40',
+        'group inline-flex select-none items-center justify-center gap-2 rounded-[10px] text-center font-semibold leading-tight',
+        'transition-[background-color,border-color,box-shadow,transform] duration-150 ease-out active:translate-y-px',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2',
         VARIANTS[variant],
         SIZES[size],
         className,
@@ -56,7 +52,7 @@ export function PushButton({
       {children}
       {arrow ? (
         <ArrowRight
-          className="h-[1.1em] w-[1.1em] shrink-0 transition-transform group-hover:translate-x-1"
+          className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
           aria-hidden
         />
       ) : null}

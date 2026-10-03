@@ -1,9 +1,11 @@
 'use client';
 
 import { checkoutSchema } from '@repo/shared';
+import { Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Field, Notice } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { apiPost, errorMessage } from '@/lib/api';
@@ -72,36 +74,43 @@ export function BuyBox({ productId, priceInPaise }: { productId: string; priceIn
   }
 
   return (
-    <form onSubmit={handleBuy} className="slab space-y-4 rounded-2xl bg-butter p-5" noValidate>
-      <p className="font-display text-4xl">{formatMoney(priceInPaise)}</p>
-      <Field
-        label="Your email"
-        htmlFor="buyerEmail"
-        hint="Your download link is sent here."
-        error={fieldError}
-      >
-        <Input
-          id="buyerEmail"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-      </Field>
-      <Field label="Your name (optional)" htmlFor="buyerName">
-        <Input
-          id="buyerName"
-          autoComplete="name"
-          value={name}
-          maxLength={100}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </Field>
-      {problem ? <Notice tone="error">{problem}</Notice> : null}
-      <Button type="submit" size="lg" className="w-full" disabled={busy}>
-        {busy ? 'Please wait…' : `Buy for ${formatMoney(priceInPaise)}`}
-      </Button>
-      <p className="text-sm text-ink/80">Pay by UPI, card or netbanking. Secured by Razorpay.</p>
-    </form>
+    <Card className="p-6 md:sticky md:top-8">
+      <form onSubmit={handleBuy} className="space-y-4" noValidate>
+        <p className="font-display text-[40px] font-medium leading-none tracking-tight">
+          {formatMoney(priceInPaise)}
+        </p>
+        <Field
+          label="Your email"
+          htmlFor="buyerEmail"
+          hint="Your download link is sent here."
+          error={fieldError}
+        >
+          <Input
+            id="buyerEmail"
+            type="email"
+            autoComplete="email"
+            value={email}
+            aria-invalid={Boolean(fieldError) || undefined}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Field>
+        <Field label="Your name" htmlFor="buyerName" aside="Optional">
+          <Input
+            id="buyerName"
+            autoComplete="name"
+            value={name}
+            maxLength={100}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </Field>
+        {problem ? <Notice tone="error">{problem}</Notice> : null}
+        <Button type="submit" variant="brand" size="lg" className="w-full" disabled={busy}>
+          {busy ? 'Please wait…' : `Buy for ${formatMoney(priceInPaise)}`}
+        </Button>
+        <p className="flex items-center justify-center gap-1.5 text-[13px] text-ink-soft">
+          <Lock className="h-3.5 w-3.5" /> UPI, cards and netbanking · secured by Razorpay
+        </p>
+      </form>
+    </Card>
   );
 }

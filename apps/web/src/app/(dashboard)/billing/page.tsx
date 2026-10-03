@@ -2,11 +2,13 @@
 
 import { PLAN_LIMITS, type PlanId } from '@repo/shared';
 import { useQueryClient } from '@tanstack/react-query';
+import { Check } from 'lucide-react';
 import { useState } from 'react';
 import { UsageMeter } from '@/components/billing/UsageMeter';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Badge, Notice } from '@/components/ui/field';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge, ListSkeleton, Notice } from '@/components/ui/field';
 import { type PaidPlan, useBilling, useCancelSubscription, useSubscribe } from '@/hooks/useBilling';
 import { errorMessage } from '@/lib/api';
 import { openCheckout } from '@/lib/razorpay';
@@ -17,6 +19,11 @@ const PLAN_NAMES: Record<PlanId, string> = {
   TRIAL: 'Trial',
   PREMIUM: 'Premium',
   PROFESSIONAL: 'Professional',
+};
+const PLAN_NOTES: Record<'FREE' | PaidPlan, string> = {
+  FREE: 'For your first launches.',
+  PREMIUM: 'For when reels start taking off.',
+  PROFESSIONAL: 'For full-time creators and teams.',
 };
 const limitText = (n: number | null) => (n === null ? 'Unlimited' : formatNumber(n));
 
@@ -70,42 +77,50 @@ export default function BillingPage() {
 
   return (
     <>
-      <PageHeader title="Billing" description="Your plan and this month's usage." />
-      {isLoading ? <p className="text-ink/75">Loading…</p> : null}
+      <PageHeader title="Plan & billing" description="Your plan and this month’s usage." />
+      {isLoading ? <ListSkeleton rows={2} /> : null}
       {error ? <Notice tone="error">{errorMessage(error)}</Notice> : null}
       {message ? (
-        <Notice tone={message.tone} className="mb-4">
+        <Notice tone={message.tone} className="mb-5">
           {message.text}
         </Notice>
       ) : null}
 
       {data ? (
         <>
-          <section className="rounded-xl border-2 border-ink bg-white p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-2xl">
-                You are on {PLAN_NAMES[data.plan]}{' '}
-                {data.subscription ? <Badge tone="yellow">{data.subscription.status}</Badge> : null}
-              </h2>
-              {data.subscription ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCancel}
-                  disabled={cancel.isPending}
-                >
-                  {cancel.isPending ? 'Cancelling…' : 'Cancel subscription'}
-                </Button>
-              ) : null}
-            </div>
-            {data.planExpiresAt ? (
-              <p className="mt-1 text-sm text-ink/75">
-                Current period ends {formatDate(data.planExpiresAt)}.
-              </p>
-            ) : null}
-            <div className="mt-5 space-y-5">
+          <Card>
+            <CardHeader
+              title={
+                <span className="flex flex-wrap items-center gap-2">
+                  You are on {PLAN_NAMES[data.plan]}
+                  {data.subscription ? (
+                    <Badge dot tone="yellow">
+                      {data.subscription.status.toLowerCase()}
+                    </Badge>
+                  ) : null}
+                </span>
+              }
+              description={
+                data.planExpiresAt
+                  ? `Current period ends ${formatDate(data.planExpiresAt)}.`
+                  : 'Free forever. Upgrade whenever you need more.'
+              }
+              action={
+                data.subscription ? (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={cancel.isPending}
+                  >
+                    {cancel.isPending ? 'Cancelling…' : 'Cancel subscription'}
+                  </Button>
+                ) : null
+              }
+            />
+            <CardContent className="grid gap-6 sm:grid-cols-2">
               <UsageMeter
-                label="DMs sent this month"
+                label="DMs this month"
                 used={data.usage.dmsThisMonth}
                 limit={data.limits.maxDmsPerMonth}
               />
@@ -114,49 +129,60 @@ export default function BillingPage() {
                 used={data.usage.automations}
                 limit={data.limits.maxAutomations}
               />
-            </div>
-          </section>
+            </CardContent>
+          </Card>
 
-          <h2 className="mb-3 mt-8 font-display text-2xl">Plans</h2>
+          <h2 className="mb-4 mt-10 font-display text-2xl font-medium tracking-tight text-ink">
+            Plans
+          </h2>
           <div className="grid gap-4 md:grid-cols-3">
             {(['FREE', 'PREMIUM', 'PROFESSIONAL'] as const).map((plan) => {
               const current = data.plan === plan;
               const limits = PLAN_LIMITS[plan];
               const buyable = plan !== 'FREE' && data.available[plan];
               return (
-                <div
+                <Card
                   key={plan}
-                  className={cn(
-                    'flex flex-col rounded-xl border-2 border-ink p-5',
-                    current ? 'bg-butter' : 'bg-white',
-                  )}
+                  className={cn('flex flex-col p-5', current && 'border-moss ring-4 ring-moss/10')}
                 >
-                  <p className="flex flex-wrap items-center gap-2 font-display text-xl">
-                    {PLAN_NAMES[plan]} {current ? <Badge tone="green">Your plan</Badge> : null}
-                  </p>
-                  <ul className="mt-3 flex-1 space-y-1.5 text-sm">
-                    <li>{limitText(limits.maxAutomations)} automations</li>
-                    <li>{limitText(limits.maxDmsPerMonth)} DMs a month</li>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-lg font-semibold text-ink">{PLAN_NAMES[plan]}</p>
+                    {current ? <Badge tone="green">Current</Badge> : null}
+                  </div>
+                  <p className="mt-1 text-sm text-ink-soft">{PLAN_NOTES[plan]}</p>
+                  <ul className="mt-4 flex-1 space-y-2 text-sm">
+                    {[
+                      `${limitText(limits.maxAutomations)} automations`,
+                      `${limitText(limits.maxDmsPerMonth)} DMs a month`,
+                    ].map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-ink">
+                        <Check className="h-4 w-4 shrink-0 text-moss" strokeWidth={2.5} />
+                        {item}
+                      </li>
+                    ))}
                   </ul>
                   {plan !== 'FREE' && !current ? (
                     buyable ? (
                       <Button
-                        className="mt-4"
+                        className="mt-5"
+                        variant={plan === 'PREMIUM' ? 'brand' : 'default'}
                         disabled={subscribe.isPending || Boolean(data.subscription)}
                         onClick={() => handleUpgrade(plan)}
                       >
                         {subscribe.isPending ? 'Opening…' : `Upgrade to ${PLAN_NAMES[plan]}`}
                       </Button>
                     ) : (
-                      <p className="mt-4 text-sm font-medium text-ink/75">Not on sale yet.</p>
+                      <p className="mt-5 rounded-lg bg-paper px-3 py-2 text-center text-sm text-ink-soft">
+                        Coming soon
+                      </p>
                     )
                   ) : null}
-                </div>
+                </Card>
               );
             })}
           </div>
           {data.subscription ? (
-            <p className="mt-3 text-sm text-ink/75">
+            <p className="mt-4 text-sm text-ink-soft">
               To switch plans, cancel your current subscription first.
             </p>
           ) : null}

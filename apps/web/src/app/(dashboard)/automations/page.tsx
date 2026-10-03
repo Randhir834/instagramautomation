@@ -1,10 +1,12 @@
 'use client';
 
+import { Pencil, Plus, Trash2, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { STEP_INFO } from '@/components/automations/StepEditor';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Badge, EmptyState, Notice } from '@/components/ui/field';
+import { Card } from '@/components/ui/card';
+import { Badge, EmptyState, ListSkeleton, Notice, Toggle } from '@/components/ui/field';
 import {
   type Automation,
   useAutomations,
@@ -23,112 +25,115 @@ function AutomationRow({ automation }: { automation: Automation }) {
   const toggle = useToggleAutomation();
   const remove = useDeleteAutomation();
   const error = toggle.error ?? remove.error;
+  const where =
+    automation.triggerType === 'COMMENT' ? (automation.postId ? 'one post' : 'all posts') : null;
 
   return (
-    <li className="rounded-xl border-2 border-ink bg-white p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/automations/${automation.id}`}
-              className="break-words font-display text-xl underline-offset-4 hover:underline"
-            >
-              {automation.name}
-            </Link>
-            <Badge tone={automation.isActive ? 'green' : 'neutral'}>
-              {automation.isActive ? 'On' : 'Paused'}
-            </Badge>
-          </p>
-          <p className="mt-1 text-sm text-ink/75">
-            {TRIGGER_LABEL[automation.triggerType]} on @{automation.igAccount.username}
-            {automation.triggerType === 'COMMENT'
-              ? automation.postId
-                ? ', one post'
-                : ', all posts'
-              : ''}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
+    <div className="p-5">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        <div className="flex min-w-0 items-start gap-3.5">
+          <Toggle
+            checked={automation.isActive}
             disabled={toggle.isPending}
-            onClick={() => toggle.mutate({ id: automation.id, isActive: !automation.isActive })}
-          >
-            {automation.isActive ? 'Pause' : 'Turn on'}
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/automations/${automation.id}`}>Edit</Link>
+            onChange={(isActive) => toggle.mutate({ id: automation.id, isActive })}
+            label={`${automation.isActive ? 'Pause' : 'Turn on'} ${automation.name}`}
+          />
+          <div className="min-w-0">
+            <p className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/automations/${automation.id}`}
+                className="font-semibold text-ink underline-offset-4 [overflow-wrap:anywhere] hover:underline"
+              >
+                {automation.name}
+              </Link>
+              <Badge tone={automation.isActive ? 'green' : 'neutral'} dot>
+                {automation.isActive ? 'On' : 'Paused'}
+              </Badge>
+            </p>
+            <p className="mt-0.5 text-[13px] text-ink-soft">
+              {TRIGGER_LABEL[automation.triggerType]}
+              {where ? ` on ${where}` : ''} · @{automation.igAccount.username}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-1">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href={`/automations/${automation.id}`}>
+              <Pencil /> Edit
+            </Link>
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
+            aria-label={`Delete ${automation.name}`}
             disabled={remove.isPending}
+            className="hover:text-brand-dark"
             onClick={() => {
               if (window.confirm(`Delete "${automation.name}"? This cannot be undone.`)) {
                 remove.mutate(automation.id);
               }
             }}
           >
-            Delete
+            <Trash2 />
           </Button>
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 pl-[58px]">
         {automation.keywords.map((keyword) => (
           <span
             key={keyword}
-            className="break-all rounded-md border-2 border-ink bg-butter px-2 py-0.5 text-sm font-semibold"
+            className="rounded-md bg-butter-tint px-2 py-0.5 text-[13px] font-semibold text-ink ring-1 ring-inset ring-[#ecd48a] [overflow-wrap:anywhere]"
           >
             {keyword}
           </span>
         ))}
+        <span className="mx-1 text-ink-faint" aria-hidden>
+          →
+        </span>
+        <span className="text-[13px] text-ink-soft">
+          {automation.steps.map((s) => STEP_INFO[s.type].label).join(', then ')}
+        </span>
       </div>
-      <p className="mt-3 text-sm text-ink/75">
-        {automation.steps.map((s) => STEP_INFO[s.type].label).join(' → ')}
-      </p>
       {error ? (
         <Notice tone="error" className="mt-3">
           {errorMessage(error)}
         </Notice>
       ) : null}
-    </li>
+    </div>
   );
 }
 
 export default function AutomationsPage() {
   const { data, isLoading, error } = useAutomations();
+  const newButton = (
+    <Button asChild>
+      <Link href="/automations/new">
+        <Plus /> New automation
+      </Link>
+    </Button>
+  );
   return (
     <>
       <PageHeader
         title="Automations"
         description="Reply to comments and send DMs automatically."
-        actions={
-          <Button asChild>
-            <Link href="/automations/new">New automation</Link>
-          </Button>
-        }
+        actions={data && data.length > 0 ? newButton : undefined}
       />
-      {isLoading ? <p className="text-ink/75">Loading…</p> : null}
+      {isLoading ? <ListSkeleton /> : null}
       {error ? <Notice tone="error">{errorMessage(error)}</Notice> : null}
       {data && data.length === 0 ? (
-        <EmptyState
-          title="No automations yet"
-          action={
-            <Button asChild>
-              <Link href="/automations/new">Create your first one</Link>
-            </Button>
-          }
-        >
+        <EmptyState icon={Zap} title="No automations yet" action={newButton}>
           Pick a post and a keyword, write the reply and the DM. It takes a couple of minutes.
         </EmptyState>
       ) : null}
-      <ul className="space-y-3">
-        {data?.map((automation) => (
-          <AutomationRow key={automation.id} automation={automation} />
-        ))}
-      </ul>
+      {data && data.length > 0 ? (
+        <Card className="divide-y divide-line">
+          {data.map((automation) => (
+            <AutomationRow key={automation.id} automation={automation} />
+          ))}
+        </Card>
+      ) : null}
     </>
   );
 }

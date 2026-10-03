@@ -1,6 +1,7 @@
 'use client';
 
-import { Notice } from '@/components/ui/field';
+import { Check, Layers } from 'lucide-react';
+import { Notice, Skeleton } from '@/components/ui/field';
 import { useMedia } from '@/hooks/useAccounts';
 import { cn } from '@/lib/utils';
 
@@ -11,74 +12,93 @@ interface PostPickerProps {
   onChange: (postId: string | null) => void;
 }
 
-const tileClass = (selected: boolean) =>
-  cn(
-    'relative aspect-square overflow-hidden rounded-lg border-2 text-left transition-shadow',
-    selected ? 'border-ink shadow-[0_4px_0_0_#1a1714]' : 'border-ink/25 hover:border-ink',
-  );
-
-/** Grid of the account's recent posts and reels, plus an "All posts" option. */
+/** "All posts" option plus a grid of the account's recent posts and reels. */
 export function PostPicker({ igAccountId, value, onChange }: PostPickerProps) {
   const { data: media, isLoading, isError } = useMedia(igAccountId);
+  const allSelected = value === null;
 
   return (
     <div>
       <button
         type="button"
         onClick={() => onChange(null)}
-        aria-pressed={value === null}
+        aria-pressed={allSelected}
         className={cn(
-          'mb-3 flex w-full items-center justify-between gap-3 rounded-lg border-2 px-4 py-3 text-left font-semibold transition-shadow',
-          value === null
-            ? 'border-ink bg-butter shadow-[0_4px_0_0_#1a1714]'
-            : 'border-ink/25 bg-white hover:border-ink',
+          'flex w-full items-center gap-3 rounded-[10px] border px-4 py-3 text-left transition-[border-color,background-color,box-shadow]',
+          allSelected
+            ? 'border-brand bg-brand-tint/50 ring-4 ring-brand/10'
+            : 'border-line-strong bg-white hover:border-[#bfb6a6]',
         )}
       >
-        All posts and reels
-        {value === null ? (
-          <span className="rounded bg-ink px-1.5 py-0.5 text-xs font-bold text-white">
-            Selected
-          </span>
-        ) : null}
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-ink-soft ring-1 ring-line">
+          <Layers className="h-4 w-4" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold text-ink">All posts and reels</span>
+          <span className="block text-[13px] text-ink-soft">Including ones you publish later</span>
+        </span>
+        <span
+          className={cn(
+            'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border',
+            allSelected ? 'border-brand bg-brand text-white' : 'border-line-strong bg-white',
+          )}
+        >
+          {allSelected ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
+        </span>
       </button>
-      {media && media.length > 0 ? (
-        <p className="mb-2 text-sm text-ink/75">Or pick one post:</p>
-      ) : null}
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
-        {media?.map((item) => {
-          const image = item.thumbnail_url ?? item.media_url;
-          const selected = value === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onChange(item.id)}
-              aria-pressed={selected}
-              aria-label={item.caption ? `Post: ${item.caption.slice(0, 60)}` : 'Post'}
-              className={cn(tileClass(selected), 'bg-moss-tint')}
-            >
-              {image ? (
-                <img src={image} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="block p-2 text-xs font-medium leading-tight">
-                  {item.caption?.slice(0, 60) || 'Post'}
-                </span>
-              )}
-              {selected ? (
-                <span className="absolute left-1 top-1 rounded bg-ink px-1.5 py-0.5 text-xs font-bold text-white">
-                  Selected
-                </span>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
 
-      {isLoading ? <p className="mt-2 text-sm text-ink/75">Loading your posts…</p> : null}
+      {isLoading ? (
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {Array.from({ length: 4 }, (_, i) => (
+            <Skeleton key={i} className="aspect-square rounded-lg" />
+          ))}
+        </div>
+      ) : null}
+
+      {media && media.length > 0 ? (
+        <>
+          <p className="mb-2 mt-4 text-[13px] font-medium text-ink-soft">Or only one post</p>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+            {media.map((item) => {
+              const image = item.thumbnail_url ?? item.media_url;
+              const selected = value === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onChange(item.id)}
+                  aria-pressed={selected}
+                  aria-label={item.caption ? `Post: ${item.caption.slice(0, 60)}` : 'Post'}
+                  className={cn(
+                    'relative aspect-square overflow-hidden rounded-lg border bg-moss-tint text-left transition-[box-shadow,border-color]',
+                    selected
+                      ? 'border-brand ring-4 ring-brand/20'
+                      : 'border-line hover:border-line-strong',
+                  )}
+                >
+                  {image ? (
+                    <img src={image} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="block p-2 text-xs font-medium leading-snug text-moss-dark">
+                      {item.caption?.slice(0, 50) || 'Post'}
+                    </span>
+                  )}
+                  {selected ? (
+                    <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white shadow-xs">
+                      <Check className="h-3 w-3" strokeWidth={3} />
+                      <span className="sr-only">Selected</span>
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      ) : null}
+
       {isError ? (
         <Notice tone="warning" className="mt-3">
-          Could not load your posts from Instagram right now. You can still use “All posts and
-          reels”.
+          Could not load your posts from Instagram right now. “All posts and reels” still works.
         </Notice>
       ) : null}
     </div>

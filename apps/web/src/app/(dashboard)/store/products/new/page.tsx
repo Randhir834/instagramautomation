@@ -7,7 +7,11 @@ export const metadata: Metadata = { title: 'New product' };
 export default function NewProductPage() {
   return (
     <>
-      <PageHeader title="New product" description="Upload a file and set a price." />
+      <PageHeader
+        title="New product"
+        description="Upload the file, set a price, and it is ready to sell."
+        back={{ href: '/store', label: 'Store' }}
+      />
       <ProductForm />
     </>
   );

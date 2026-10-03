@@ -47,3 +47,25 @@ export function formatDay(value: string | Date): string {
 export function formatNumber(value: number): string {
   return value.toLocaleString('en-IN');
 }
+
+/** "3 min ago", "2 h ago", "4 Oct" */
+export function formatRelative(value: string | Date): string {
+  const diff = Date.now() - new Date(value).getTime();
+  const minutes = Math.round(diff / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} h ago`;
+  const days = Math.round(hours / 24);
+  if (days < 7) return `${days} d ago`;
+  return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short' }).format(
+    new Date(value),
+  );
+}
+
+/** "Meera Kneads" -> "MK" */
+export function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const letters = parts.length > 1 ? [parts[0], parts[parts.length - 1]] : parts;
+  return letters.map((p) => p?.[0]?.toUpperCase() ?? '').join('') || '?';
+}

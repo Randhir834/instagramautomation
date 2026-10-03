@@ -3,44 +3,57 @@ import { cn } from '@/lib/utils';
 
 type DivProps = React.HTMLAttributes<HTMLDivElement>;
 
+/** White surface with a hairline border and a soft shadow. */
 const Card = React.forwardRef<HTMLDivElement, DivProps>(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('rounded-lg border bg-card text-card-foreground shadow-sm', className)}
+    className={cn('rounded-xl border border-line bg-white shadow-soft', className)}
     {...props}
   />
 ));
 Card.displayName = 'Card';
 
-const CardHeader = React.forwardRef<HTMLDivElement, DivProps>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
-));
-CardHeader.displayName = 'CardHeader';
+interface CardHeaderProps extends Omit<DivProps, 'title'> {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  /** Right-aligned controls. */
+  action?: React.ReactNode;
+}
 
-const CardTitle = React.forwardRef<HTMLDivElement, DivProps>(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn('text-lg font-semibold leading-none tracking-tight', className)}
-    {...props}
-  />
-));
-CardTitle.displayName = 'CardTitle';
-
-const CardDescription = React.forwardRef<HTMLDivElement, DivProps>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />
-  ),
-);
-CardDescription.displayName = 'CardDescription';
+/** Title row of a card, separated from the body by a hairline. */
+function CardHeader({ title, description, action, className, ...props }: CardHeaderProps) {
+  return (
+    <div
+      className={cn(
+        'flex flex-wrap items-start justify-between gap-x-4 gap-y-2 border-b border-line px-5 py-4',
+        className,
+      )}
+      {...props}
+    >
+      <div className="min-w-0">
+        <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
+        {description ? <p className="mt-0.5 text-sm text-ink-soft">{description}</p> : null}
+      </div>
+      {action ? <div className="flex flex-wrap items-center gap-2">{action}</div> : null}
+    </div>
+  );
+}
 
 const CardContent = React.forwardRef<HTMLDivElement, DivProps>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+  <div ref={ref} className={cn('p-5', className)} {...props} />
 ));
 CardContent.displayName = 'CardContent';
 
 const CardFooter = React.forwardRef<HTMLDivElement, DivProps>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('flex items-center p-6 pt-0', className)} {...props} />
+  <div
+    ref={ref}
+    className={cn(
+      'flex flex-wrap items-center justify-end gap-2 rounded-b-xl border-t border-line bg-paper/60 px-5 py-3',
+      className,
+    )}
+    {...props}
+  />
 ));
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
+export { Card, CardContent, CardFooter, CardHeader };

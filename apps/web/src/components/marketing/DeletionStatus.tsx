@@ -1,5 +1,6 @@
 'use client';
 
+import { CheckCircle2, HelpCircle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ApiRequestError, apiGet } from '@/lib/api';
 import { formatDateTime } from '@/lib/utils';
@@ -27,21 +28,26 @@ export function DeletionStatus() {
 
   if (!code) return null;
   return (
-    <div className="rounded-xl border-2 border-ink bg-white p-5">
-      <p className="text-xs font-bold uppercase tracking-wide text-ink/75">
-        Deletion request <span className="break-all">{code}</span>
-      </p>
+    <div className="flex items-start gap-3 rounded-xl border border-line bg-white p-5 shadow-soft">
       {status ? (
-        <p className="mt-2">
-          <strong>Completed.</strong> Your data was deleted on {formatDateTime(status.requestedAt)}.
-        </p>
+        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-moss" />
       ) : notFound ? (
-        <p className="mt-2">
-          We have no record of this code. Codes are kept for 90 days after the request.
-        </p>
+        <HelpCircle className="mt-0.5 h-5 w-5 shrink-0 text-ink-soft" />
       ) : (
-        <p className="mt-2">Checking…</p>
+        <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-ink-soft" />
       )}
+      <div className="min-w-0">
+        <p className="text-[13px] text-ink-soft [overflow-wrap:anywhere]">Request {code}</p>
+        {status ? (
+          <p className="mt-0.5 font-medium">
+            Completed. Your data was deleted on {formatDateTime(status.requestedAt)}.
+          </p>
+        ) : notFound ? (
+          <p className="mt-0.5">We have no record of this code. Codes are kept for 90 days.</p>
+        ) : (
+          <p className="mt-0.5">Checking…</p>
+        )}
+      </div>
     </div>
   );
 }

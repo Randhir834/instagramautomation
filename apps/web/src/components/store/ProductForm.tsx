@@ -11,15 +11,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Field, Notice, Textarea } from '@/components/ui/field';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Field, Notice, Textarea, Toggle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { uploadFile, useCreateProduct } from '@/hooks/useStore';
 import { errorMessage } from '@/lib/api';
 import { WEB_URL } from '@/lib/utils';
-
-const fileInputClass =
-  'block w-full rounded-lg border-2 border-ink/25 bg-white text-sm file:mr-3 file:border-0 file:border-r-2 file:border-ink/25 file:bg-butter file:px-4 file:py-2.5 file:font-semibold file:text-ink';
+import { FileDrop } from './FileDrop';
 
 /** Create a digital product: title, description, price, file, cover. */
 export function ProductForm() {
@@ -85,107 +84,117 @@ export function ProductForm() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-5 rounded-xl border-2 border-ink bg-white p-5"
-      noValidate
-    >
-      <Field label="Title" htmlFor="title" error={errors.title}>
-        <Input
-          id="title"
-          value={title}
-          maxLength={120}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Sourdough, start to finish"
-        />
-      </Field>
+    <form onSubmit={handleSubmit} noValidate className="max-w-2xl space-y-5">
+      <Card>
+        <CardHeader title="Details" description="What buyers see on your store." />
+        <CardContent className="space-y-5">
+          <Field label="Title" htmlFor="title" error={errors.title}>
+            <Input
+              id="title"
+              value={title}
+              maxLength={120}
+              aria-invalid={Boolean(errors.title) || undefined}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Sourdough, start to finish"
+            />
+          </Field>
 
-      <Field
-        label="Link"
-        htmlFor="slug"
-        hint={`${WEB_URL}/s/${user?.username ?? 'you'}/${finalSlug || 'your-product'}`}
-        error={errors.slug}
-      >
-        <Input
-          id="slug"
-          value={finalSlug}
-          maxLength={80}
-          onChange={(e) => setSlug(slugify(e.target.value.replace(/\s+/g, '-')))}
-          spellCheck={false}
-        />
-      </Field>
+          <Field label="Description" htmlFor="description" aside="Optional">
+            <Textarea
+              id="description"
+              rows={4}
+              value={description}
+              maxLength={5000}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What do they get, and who is it for?"
+            />
+          </Field>
 
-      <Field label="Description" htmlFor="description" hint="What do they get? Optional.">
-        <Textarea
-          id="description"
-          rows={4}
-          value={description}
-          maxLength={5000}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </Field>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Price" htmlFor="price" error={errors.price}>
+              <div className="relative">
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-ink-soft">
+                  ₹
+                </span>
+                <Input
+                  id="price"
+                  type="number"
+                  inputMode="decimal"
+                  min={1}
+                  step="1"
+                  value={price}
+                  aria-invalid={Boolean(errors.price) || undefined}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="499"
+                  className="pl-7"
+                />
+              </div>
+            </Field>
 
-      <Field label="Price in rupees" htmlFor="price" error={errors.price}>
-        <Input
-          id="price"
-          type="number"
-          inputMode="decimal"
-          min={1}
-          step="1"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="499"
-          className="max-w-[12rem]"
-        />
-      </Field>
+            <Field label="Link" htmlFor="slug" error={errors.slug}>
+              <Input
+                id="slug"
+                value={finalSlug}
+                maxLength={80}
+                onChange={(e) => setSlug(slugify(e.target.value.replace(/\s+/g, '-')))}
+                spellCheck={false}
+              />
+            </Field>
+          </div>
+          <p className="-mt-2 text-[13px] text-ink-soft [overflow-wrap:anywhere]">
+            Your product page: {WEB_URL.replace(/^https?:\/\//, '')}/s/{user?.username ?? 'you'}/
+            <span className="font-semibold text-ink">{finalSlug || 'your-product'}</span>
+          </p>
+        </CardContent>
+      </Card>
 
-      <Field
-        label="The file buyers get"
-        htmlFor="file"
-        hint="PDF, ZIP, video, anything. Up to 500 MB. Only people who paid can download it."
-        error={errors.file}
-      >
-        <input
-          id="file"
-          type="file"
-          className={fileInputClass}
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        />
-      </Field>
+      <Card>
+        <CardHeader title="Files" description="Only buyers who paid can download the file." />
+        <CardContent className="space-y-5">
+          <Field label="Product file" htmlFor="file" error={errors.file}>
+            <FileDrop
+              id="file"
+              file={file}
+              onChange={setFile}
+              title="Choose a file or drop it here"
+              hint="PDF, ZIP, video — anything up to 500 MB"
+              invalid={Boolean(errors.file)}
+            />
+          </Field>
+          <Field label="Cover image" htmlFor="cover" aside="Optional" error={errors.cover}>
+            <FileDrop
+              id="cover"
+              file={cover}
+              onChange={setCover}
+              accept={COVER_CONTENT_TYPES.join(',')}
+              title="Choose a cover image"
+              hint="JPG, PNG or WebP, up to 5 MB"
+              invalid={Boolean(errors.cover)}
+            />
+          </Field>
+        </CardContent>
+      </Card>
 
-      <Field
-        label="Cover image"
-        htmlFor="cover"
-        hint="Optional. JPG, PNG or WebP, up to 5 MB."
-        error={errors.cover}
-      >
-        <input
-          id="cover"
-          type="file"
-          accept={COVER_CONTENT_TYPES.join(',')}
-          className={fileInputClass}
-          onChange={(e) => setCover(e.target.files?.[0] ?? null)}
-        />
-      </Field>
-
-      <label className="flex items-start gap-3 text-sm font-medium">
-        <input
-          type="checkbox"
+      <Card className="flex items-center justify-between gap-4 p-5">
+        <div>
+          <p className="text-sm font-semibold text-ink">Show on my store right away</p>
+          <p className="text-[13px] text-ink-soft">You can hide it later at any time.</p>
+        </div>
+        <Toggle
           checked={isPublished}
-          onChange={(e) => setIsPublished(e.target.checked)}
-          className="mt-0.5 h-5 w-5 accent-[#1a1714]"
+          onChange={setIsPublished}
+          label="Show on my store right away"
         />
-        Show it on my store page right away
-      </label>
+      </Card>
 
       {failure ? <Notice tone="error">{failure}</Notice> : null}
       {status ? <Notice tone="info">{status} Keep this page open.</Notice> : null}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? 'Working…' : 'Add product'}
         </Button>
-        <Button type="button" variant="outline" size="lg" asChild>
+        <Button type="button" variant="ghost" size="lg" asChild>
           <Link href="/store">Cancel</Link>
         </Button>
       </div>

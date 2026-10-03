@@ -1,11 +1,14 @@
 'use client';
 
+import { CalendarClock, CalendarPlus, ExternalLink, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Badge, EmptyState, Field, Notice, Select } from '@/components/ui/field';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { EmptyState, Field, ListSkeleton, Notice, Select } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
+  type Booking,
   useBookings,
   useCancelBooking,
   useCreateSlots,
@@ -22,6 +25,21 @@ const DURATIONS = [15, 30, 45, 60, 90];
 function todayLocal(): string {
   const now = new Date();
   return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
+/** A small "calendar page" showing the date. */
+function DateTile({ value }: { value: string }) {
+  const date = new Date(value);
+  return (
+    <span className="flex w-12 shrink-0 flex-col overflow-hidden rounded-lg border border-line bg-white text-center shadow-xs">
+      <span className="bg-brand py-0.5 text-[11px] font-bold uppercase tracking-wide text-white">
+        {new Intl.DateTimeFormat('en-IN', { month: 'short' }).format(date)}
+      </span>
+      <span className="py-1 font-display text-lg font-semibold leading-none text-ink">
+        {date.getDate()}
+      </span>
+    </span>
+  );
 }
 
 function AddSlotForm() {
@@ -46,49 +64,103 @@ function AddSlotForm() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-xl border-2 border-ink bg-white p-5"
-      noValidate
-    >
-      <h2 className="font-display text-xl">Open a slot</h2>
-      <div className="mt-4 grid gap-4 sm:grid-cols-3">
-        <Field label="Date" htmlFor="date">
-          <Input
-            id="date"
-            type="date"
-            min={todayLocal()}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </Field>
-        <Field label="Starts at" htmlFor="time">
-          <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-        </Field>
-        <Field label="Length" htmlFor="minutes">
-          <Select id="minutes" value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}>
-            {DURATIONS.map((d) => (
-              <option key={d} value={d}>
-                {d} minutes
-              </option>
-            ))}
-          </Select>
-        </Field>
+    <Card>
+      <CardHeader
+        title="Open a time slot"
+        description="People can book it from your booking page."
+      />
+      <CardContent>
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-[1fr_1fr_1fr_auto] lg:items-end">
+            <Field label="Date" htmlFor="date">
+              <Input
+                id="date"
+                type="date"
+                min={todayLocal()}
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </Field>
+            <Field label="Starts at" htmlFor="time">
+              <Input id="time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+            </Field>
+            <Field label="Length" htmlFor="minutes">
+              <Select
+                id="minutes"
+                value={minutes}
+                onChange={(e) => setMinutes(Number(e.target.value))}
+              >
+                {DURATIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d} minutes
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Button
+              type="submit"
+              className="h-11 sm:col-span-3 sm:justify-self-start lg:col-span-1"
+              disabled={create.isPending}
+            >
+              <CalendarPlus /> {create.isPending ? 'Adding…' : 'Add slot'}
+            </Button>
+          </div>
+          {problem ? (
+            <Notice tone="error" className="mt-4">
+              {problem}
+            </Notice>
+          ) : null}
+          {create.isError ? (
+            <Notice tone="error" className="mt-4">
+              {errorMessage(create.error)}
+            </Notice>
+          ) : null}
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BookingRow({ booking }: { booking: Booking }) {
+  const cancel = useCancelBooking();
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4 p-5">
+      <div className="flex min-w-0 items-start gap-4">
+        <DateTile value={booking.slot.startsAt} />
+        <div className="min-w-0">
+          <p className="font-semibold text-ink">
+            {formatTime(booking.slot.startsAt)} – {formatTime(booking.slot.endsAt)}
+          </p>
+          <p className="text-sm text-ink [overflow-wrap:anywhere]">
+            {booking.guestName} ·{' '}
+            <a href={`mailto:${booking.guestEmail}`} className="underline-offset-4 hover:underline">
+              {booking.guestEmail}
+            </a>
+          </p>
+          {booking.note ? (
+            <p className="mt-1.5 rounded-lg bg-paper px-3 py-2 text-sm text-ink-soft [overflow-wrap:anywhere]">
+              “{booking.note}”
+            </p>
+          ) : null}
+        </div>
       </div>
-      {problem ? (
-        <Notice tone="error" className="mt-4">
-          {problem}
-        </Notice>
-      ) : null}
-      {create.isError ? (
-        <Notice tone="error" className="mt-4">
-          {errorMessage(create.error)}
-        </Notice>
-      ) : null}
-      <Button type="submit" className="mt-4" disabled={create.isPending}>
-        {create.isPending ? 'Adding…' : 'Add slot'}
+      <Button
+        variant="danger"
+        size="sm"
+        disabled={cancel.isPending}
+        onClick={() => {
+          if (
+            window.confirm(
+              `Cancel the call with ${booking.guestName}? Let them know yourself; we do not email them.`,
+            )
+          ) {
+            cancel.mutate(booking.id);
+          }
+        }}
+      >
+        Cancel call
       </Button>
-    </form>
+    </div>
   );
 }
 
@@ -97,109 +169,110 @@ export default function BookingsPage() {
   const slots = useSlots();
   const bookings = useBookings();
   const deleteSlot = useDeleteSlot();
-  const cancel = useCancelBooking();
   const publicUrl = user ? `${WEB_URL}/book/${user.username}` : '';
   const upcoming = bookings.data?.filter((b) => b.status === 'CONFIRMED') ?? [];
   const openSlots = slots.data?.filter((s) => !s.isBooked) ?? [];
-  const actionError = deleteSlot.error ?? cancel.error;
 
   return (
     <>
-      <PageHeader title="Bookings" description="Open slots for 1:1 calls and see who booked." />
+      <PageHeader
+        title="Bookings"
+        description="Open time slots for 1:1 calls and see who booked."
+        actions={
+          publicUrl ? (
+            <Button variant="outline" asChild>
+              <a href={publicUrl} target="_blank" rel="noreferrer">
+                <ExternalLink /> Booking page
+              </a>
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {publicUrl ? (
-        <Notice tone="info" className="mb-5">
-          Your booking page:{' '}
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="break-all underline">
-            {publicUrl}
-          </a>
-        </Notice>
-      ) : null}
-      {actionError ? (
+      {deleteSlot.isError ? (
         <Notice tone="error" className="mb-5">
-          {errorMessage(actionError)}
+          {errorMessage(deleteSlot.error)}
         </Notice>
       ) : null}
 
       <AddSlotForm />
 
-      <h2 className="mb-3 mt-8 font-display text-2xl">Booked calls</h2>
-      {bookings.error ? <Notice tone="error">{errorMessage(bookings.error)}</Notice> : null}
-      {bookings.data && upcoming.length === 0 ? (
-        <EmptyState title="No one has booked yet">
-          Share your booking page to get started.
-        </EmptyState>
-      ) : null}
-      <ul className="space-y-3">
-        {upcoming.map((booking) => (
-          <li key={booking.id} className="rounded-xl border-2 border-ink bg-moss-tint p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="font-semibold">
-                  {formatDay(booking.slot.startsAt)}, {formatTime(booking.slot.startsAt)} to{' '}
-                  {formatTime(booking.slot.endsAt)}
-                </p>
-                <p className="break-all text-sm">
-                  {booking.guestName} ·{' '}
-                  <a href={`mailto:${booking.guestEmail}`} className="underline">
-                    {booking.guestEmail}
-                  </a>
-                </p>
-                {booking.note ? (
-                  <p className="mt-1 break-words text-sm text-ink/80">“{booking.note}”</p>
-                ) : null}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={cancel.isPending}
-                onClick={() => {
-                  if (
-                    window.confirm(
-                      `Cancel the call with ${booking.guestName}? Let them know yourself; we do not email them.`,
-                    )
-                  ) {
-                    cancel.mutate(booking.id);
-                  }
-                }}
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader title="Booked calls" description={`${upcoming.length} upcoming`} />
+          {bookings.isLoading ? (
+            <div className="p-5">
+              <ListSkeleton rows={1} />
+            </div>
+          ) : null}
+          {bookings.error ? (
+            <div className="p-5">
+              <Notice tone="error">{errorMessage(bookings.error)}</Notice>
+            </div>
+          ) : null}
+          {bookings.data && upcoming.length === 0 ? (
+            <div className="p-5">
+              <EmptyState
+                icon={CalendarClock}
+                title="No one has booked yet"
+                className="border-0 bg-transparent py-6"
               >
-                Cancel
-              </Button>
+                Share your booking page to get started.
+              </EmptyState>
             </div>
-          </li>
-        ))}
-      </ul>
+          ) : null}
+          <div className="divide-y divide-line">
+            {upcoming.map((booking) => (
+              <BookingRow key={booking.id} booking={booking} />
+            ))}
+          </div>
+        </Card>
 
-      <h2 className="mb-3 mt-8 font-display text-2xl">Open slots</h2>
-      {slots.error ? <Notice tone="error">{errorMessage(slots.error)}</Notice> : null}
-      {slots.data && openSlots.length === 0 ? (
-        <EmptyState title="No open slots">
-          Add one above and it appears on your booking page.
-        </EmptyState>
-      ) : null}
-      <ul className="grid gap-3 sm:grid-cols-2">
-        {openSlots.map((slot) => (
-          <li
-            key={slot.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-ink bg-white p-4"
-          >
-            <div>
-              <p className="font-semibold">{formatDay(slot.startsAt)}</p>
-              <p className="text-sm text-ink/75">
-                {formatTime(slot.startsAt)} to {formatTime(slot.endsAt)} <Badge>Open</Badge>
-              </p>
+        <Card>
+          <CardHeader title="Open slots" description={`${openSlots.length} available`} />
+          {slots.error ? (
+            <div className="p-5">
+              <Notice tone="error">{errorMessage(slots.error)}</Notice>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={deleteSlot.isPending}
-              onClick={() => deleteSlot.mutate(slot.id)}
-            >
-              Remove
-            </Button>
-          </li>
-        ))}
-      </ul>
+          ) : null}
+          {slots.data && openSlots.length === 0 ? (
+            <div className="p-5">
+              <EmptyState
+                icon={CalendarPlus}
+                title="No open slots"
+                className="border-0 bg-transparent py-6"
+              >
+                Add one above and it appears on your booking page.
+              </EmptyState>
+            </div>
+          ) : null}
+          <div className="divide-y divide-line">
+            {openSlots.map((slot) => (
+              <div key={slot.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                <div className="flex min-w-0 items-center gap-4">
+                  <DateTile value={slot.startsAt} />
+                  <div>
+                    <p className="text-sm font-semibold text-ink">{formatDay(slot.startsAt)}</p>
+                    <p className="text-[13px] text-ink-soft">
+                      {formatTime(slot.startsAt)} – {formatTime(slot.endsAt)}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Remove the slot on ${formatDay(slot.startsAt)} at ${formatTime(slot.startsAt)}`}
+                  disabled={deleteSlot.isPending}
+                  className="hover:text-brand-dark"
+                  onClick={() => deleteSlot.mutate(slot.id)}
+                >
+                  <Trash2 />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
     </>
   );
 }

@@ -3,7 +3,7 @@
 import { use } from 'react';
 import { AutomationForm } from '@/components/automations/AutomationForm';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Notice } from '@/components/ui/field';
+import { ListSkeleton, Notice } from '@/components/ui/field';
 import { useAutomation } from '@/hooks/useAutomations';
 import { errorMessage } from '@/lib/api';
 
@@ -13,10 +13,11 @@ export default function EditAutomationPage({ params }: { params: Promise<{ id: s
   return (
     <>
       <PageHeader
-        title="Edit automation"
-        description={data ? `@${data.igAccount.username}` : undefined}
+        title={data?.name ?? 'Edit automation'}
+        description={data ? `Runs on @${data.igAccount.username}` : undefined}
+        back={{ href: '/automations', label: 'Automations' }}
       />
-      {isLoading ? <p className="text-ink/75">Loading…</p> : null}
+      {isLoading ? <ListSkeleton rows={2} /> : null}
       {error ? <Notice tone="error">{errorMessage(error)}</Notice> : null}
       {/* key: rebuild the form if the automation is reloaded */}
       {data ? <AutomationForm key={data.id} automation={data} /> : null}

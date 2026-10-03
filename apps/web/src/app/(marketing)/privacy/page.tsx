@@ -1,40 +1,51 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { LegalPage } from '@/components/marketing/LegalPage';
 import { APP_NAME } from '@/lib/utils';
 
 export const metadata: Metadata = { title: 'Privacy Policy' };
 
-// Required by Meta App Review. TODO(Phase 8): replace this draft with the final,
-// legally reviewed policy before submitting the app.
+// Required by Meta App Review. Replace with the final, legally reviewed policy before launch.
 export default function PrivacyPage() {
   return (
-    <article className="container max-w-3xl space-y-4 py-16 text-sm leading-6">
-      <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
-      <p className="text-muted-foreground">Draft. Not yet legally reviewed.</p>
-
-      <h2 className="pt-4 text-lg font-semibold">What we collect</h2>
+    <LegalPage
+      title="Privacy Policy"
+      updated="Draft — not yet legally reviewed"
+      intro={`What ${APP_NAME} collects, why, and how you stay in control of it.`}
+    >
+      <h2>What we collect</h2>
       <p>
         When you connect an Instagram account, {APP_NAME} receives your Instagram user ID, username
         and an access token. When followers interact with your automations we store their
-        Instagram-scoped ID, username and any email or phone number they choose to share.
+        Instagram-scoped ID, username, and any email or phone number they choose to share.
       </p>
-
-      <h2 className="pt-4 text-lg font-semibold">How we use it</h2>
       <p>
-        Only to run the automations you set up, deliver products you sell, and show you your
-        contacts and activity. We do not sell personal data.
+        For your own account we store your name, email address and, if you sell or book through
+        {` ${APP_NAME}`}, the details of those orders and bookings.
       </p>
 
-      <h2 className="pt-4 text-lg font-semibold">How we protect it</h2>
-      <p>Instagram access tokens are encrypted at rest. Payments are processed by Razorpay.</p>
+      <h2>How we use it</h2>
+      <ul>
+        <li>To run the automations you set up.</li>
+        <li>To deliver products you sell and confirm bookings.</li>
+        <li>To show you your contacts and activity.</li>
+      </ul>
+      <p>We do not sell personal data, and we do not use it for advertising.</p>
 
-      <h2 className="pt-4 text-lg font-semibold">Deleting your data</h2>
+      <h2>How we protect it</h2>
+      <p>
+        Instagram access tokens are encrypted before they are stored. Payments are processed by
+        Razorpay; we never see or store card details.
+      </p>
+
+      <h2>Deleting your data</h2>
       <p>
         See the{' '}
-        <a className="underline" href="/data-deletion">
+        <Link href="/data-deletion" className="font-medium underline underline-offset-4">
           data deletion page
-        </a>
-        .
+        </Link>{' '}
+        for the ways to remove your data.
       </p>
-    </article>
+    </LegalPage>
   );
 }

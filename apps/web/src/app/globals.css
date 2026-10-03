@@ -4,25 +4,20 @@
 
 @layer base {
   :root {
-    /* Warm neutrals + ink. The only loud colour is `brand` (see tailwind.config.ts). */
-    --background: 0 0% 100%;
-    --foreground: 30 12% 9%;
+    --background: 40 33% 95%;
+    --foreground: 24 10% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 30 12% 9%;
-    --primary: 30 12% 9%;
-    --primary-foreground: 40 40% 96%;
-    --secondary: 40 24% 94%;
-    --secondary-foreground: 30 12% 9%;
-    --muted: 40 24% 94%;
-    --muted-foreground: 30 8% 27%;
-    --accent: 40 24% 92%;
-    --accent-foreground: 30 12% 9%;
-    --destructive: 0 72% 45%;
+    --card-foreground: 24 10% 10%;
+    --primary: 24 10% 10%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 38 25% 92%;
+    --muted-foreground: 33 6% 32%;
+    --destructive: 11 70% 41%;
     --destructive-foreground: 0 0% 100%;
-    --border: 36 16% 86%;
-    --input: 36 16% 82%;
-    --ring: 11 74% 45%;
-    --radius: 0.5rem;
+    --border: 38 24% 88%;
+    --input: 37 18% 79%;
+    --ring: 11 70% 45%;
+    --radius: 0.75rem;
   }
 
   * {
@@ -31,30 +26,101 @@
 
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply bg-paper font-sans text-ink antialiased;
+    font-feature-settings: 'ss01', 'cv11';
+    text-rendering: optimizeLegibility;
   }
 
   ::selection {
-    background: #f6d05c;
+    background: #f5cfc3;
+    color: #1c1917;
+  }
+
+  /* Headings use the serif with optical sizing for a printed feel. */
+  .font-display {
+    font-variation-settings: 'opsz' 96;
+  }
+
+  :focus-visible {
+    outline: 2px solid #c43d22;
+    outline-offset: 2px;
   }
 }
 
 @layer utilities {
   /* Faint paper grain so large flat areas do not look like a template. */
   .paper-grain {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.08 0 0 0 .055 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.08 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* Hard offset shadow, like a card lifted off a desk. */
-  .shadow-desk {
-    box-shadow: 5px 6px 0 0 #1a1714;
+  /* Hairline grid used behind marketing sections. */
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgba(28, 25, 23, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(28, 25, 23, 0.05) 1px, transparent 1px);
+    background-size: 56px 56px;
   }
 
-  .shadow-desk-sm {
-    box-shadow: 3px 3px 0 0 #1a1714;
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* ---- 3D helpers for the marketing visuals ---- */
+
+  /* A phone held in space, with a solid side so it reads as an object. */
+  .tilt-phone {
+    transform: perspective(1600px) rotateY(-18deg) rotateX(8deg) rotateZ(2deg);
+    box-shadow:
+      1px 1px 0 #2c2622,
+      2px 2px 0 #2c2622,
+      3px 3px 0 #2c2622,
+      4px 4px 0 #2c2622,
+      5px 5px 0 #2c2622,
+      6px 6px 0 #2c2622,
+      7px 7px 0 #2c2622,
+      8px 8px 0 #2c2622,
+      9px 9px 0 #2c2622,
+      10px 10px 0 #2c2622,
+      11px 11px 0 #2c2622,
+      12px 12px 0 #2c2622,
+      40px 60px 70px -10px rgba(28, 25, 23, 0.35);
+  }
+
+  /* Isometric slab. --edge is the colour of its side. */
+  .iso-slab {
+    transform: rotateX(57deg) rotateZ(-45deg);
+    box-shadow:
+      -1px 1px 0 var(--edge, #1c1917),
+      -2px 2px 0 var(--edge, #1c1917),
+      -3px 3px 0 var(--edge, #1c1917),
+      -4px 4px 0 var(--edge, #1c1917),
+      -5px 5px 0 var(--edge, #1c1917),
+      -6px 6px 0 var(--edge, #1c1917),
+      -7px 7px 0 var(--edge, #1c1917),
+      -8px 8px 0 var(--edge, #1c1917),
+      -9px 9px 0 var(--edge, #1c1917),
+      -10px 10px 0 var(--edge, #1c1917),
+      -11px 11px 0 var(--edge, #1c1917),
+      -12px 12px 0 var(--edge, #1c1917),
+      -13px 13px 0 var(--edge, #1c1917),
+      -14px 14px 0 var(--edge, #1c1917),
+      -30px 34px 40px rgba(10, 16, 50, 0.32);
+  }
+
+  .fan-left {
+    transform: perspective(1100px) rotateY(16deg) rotateZ(-6deg);
+  }
+
+  .fan-right {
+    transform: perspective(1100px) rotateY(-16deg) rotateZ(6deg);
   }
 }
 
@@ -62,75 +128,10 @@
   html {
     scroll-behavior: auto;
   }
-}
 
-@layer utilities {
-  /* --- 3D helpers for the marketing visuals --- */
-
-  /* Phone tilted in space, with a solid extruded side. */
-  .tilt-phone {
-    transform: perspective(1500px) rotateY(-20deg) rotateX(9deg) rotateZ(2deg);
-    box-shadow:
-      1px 1px 0 #3a322c,
-      2px 2px 0 #3a322c,
-      3px 3px 0 #3a322c,
-      4px 4px 0 #3a322c,
-      5px 5px 0 #3a322c,
-      6px 6px 0 #3a322c,
-      7px 7px 0 #3a322c,
-      8px 8px 0 #3a322c,
-      9px 9px 0 #3a322c,
-      10px 10px 0 #3a322c,
-      11px 11px 0 #3a322c,
-      12px 12px 0 #3a322c,
-      13px 13px 0 #3a322c,
-      14px 14px 0 #3a322c,
-      34px 54px 50px rgba(26, 23, 20, 0.28);
-  }
-
-  /* Isometric slab. --edge is the colour of its side. */
-  .iso-slab {
-    transform: rotateX(57deg) rotateZ(-45deg);
-    box-shadow:
-      -1px 1px 0 var(--edge, #1a1714),
-      -2px 2px 0 var(--edge, #1a1714),
-      -3px 3px 0 var(--edge, #1a1714),
-      -4px 4px 0 var(--edge, #1a1714),
-      -5px 5px 0 var(--edge, #1a1714),
-      -6px 6px 0 var(--edge, #1a1714),
-      -7px 7px 0 var(--edge, #1a1714),
-      -8px 8px 0 var(--edge, #1a1714),
-      -9px 9px 0 var(--edge, #1a1714),
-      -10px 10px 0 var(--edge, #1a1714),
-      -11px 11px 0 var(--edge, #1a1714),
-      -12px 12px 0 var(--edge, #1a1714),
-      -13px 13px 0 var(--edge, #1a1714),
-      -14px 14px 0 var(--edge, #1a1714),
-      -15px 15px 0 var(--edge, #1a1714),
-      -16px 16px 0 var(--edge, #1a1714),
-      -17px 17px 0 var(--edge, #1a1714),
-      -18px 18px 0 var(--edge, #1a1714),
-      -34px 34px 26px rgba(10, 16, 50, 0.35);
-  }
-
-  /* Chunky card: thick ink edge underneath. */
-  .slab {
-    border: 2px solid #1a1714;
-    box-shadow: 0 6px 0 0 #1a1714;
-  }
-
-  .fan-left {
-    transform: perspective(1100px) rotateY(16deg) rotateZ(-7deg);
-  }
-
-  .fan-right {
-    transform: perspective(1100px) rotateY(-16deg) rotateZ(7deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
   .animate-bob,
-  .animate-bob-slow {
+  .animate-bob-slow,
+  .animate-fade-up {
     animation: none;
   }
 }

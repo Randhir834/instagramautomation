@@ -1,7 +1,11 @@
+import { Package } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Avatar } from '@/components/layout/Brand';
 import { ProductCard, type PublicProduct } from '@/components/store/ProductCard';
+import { EmptyState } from '@/components/ui/field';
 import { fetchPublic } from '@/lib/api';
+import { initials } from '@/lib/utils';
 
 interface Storefront {
   name: string;
@@ -26,15 +30,21 @@ export default async function StorefrontPage({ params }: Props) {
 
   return (
     <>
-      <header className="mb-8 text-center">
-        <h1 className="break-words font-display text-4xl">{store.name}</h1>
-        <p className="mt-1 text-ink/75">@{store.username}</p>
+      <header className="mb-10 flex flex-col items-center text-center">
+        <Avatar
+          text={initials(store.name)}
+          className="h-20 w-20 text-xl shadow-soft ring-4 ring-white"
+        />
+        <h1 className="mt-4 font-display text-[34px] font-medium leading-tight tracking-tight [overflow-wrap:anywhere]">
+          {store.name}
+        </h1>
+        <p className="mt-1 text-[15px] text-ink-soft">@{store.username}</p>
       </header>
 
       {store.products.length === 0 ? (
-        <p className="rounded-xl border-2 border-dashed border-ink/30 bg-white p-8 text-center text-ink/75">
-          Nothing for sale here yet. Check back soon.
-        </p>
+        <EmptyState icon={Package} title="Nothing for sale yet">
+          Check back soon.
+        </EmptyState>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">
           {store.products.map((product) => (

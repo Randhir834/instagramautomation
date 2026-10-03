@@ -2,9 +2,11 @@ import { Download } from 'lucide-react';
 
 function BookingCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`slab rounded-2xl bg-sky p-4 text-white ${className}`}>
-      <p className="text-[11px] font-bold uppercase tracking-wider text-white">Book a call</p>
-      <p className="mt-1 font-display text-xl leading-tight">30 min with Meera</p>
+    <div className={`rounded-2xl bg-sky p-4 text-white shadow-lift ${className}`}>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-white/90">
+        Book a call
+      </p>
+      <p className="mt-1 font-display text-xl font-medium leading-tight">30 min with Meera</p>
       <div className="mt-4 grid grid-cols-2 gap-1.5 text-xs font-semibold">
         <span className="rounded-md bg-sky-dark px-2 py-1.5 text-center text-white line-through">
           Tue 4:00
@@ -21,19 +23,19 @@ function BookingCard({ className = '' }: { className?: string }) {
 
 function InvoiceCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`slab rounded-2xl bg-white p-4 ${className}`}>
+    <div className={`rounded-2xl border border-line bg-white p-4 shadow-lift ${className}`}>
       <div className="flex items-center justify-between gap-2">
-        <span className="font-display text-lg">Invoice #014</span>
-        <span className="rounded-full bg-moss px-2 py-0.5 text-[11px] font-bold text-white">
+        <span className="font-display text-lg font-medium">Invoice #014</span>
+        <span className="rounded-full bg-moss-tint px-2 py-0.5 text-[11px] font-bold text-moss-dark">
           PAID
         </span>
       </div>
-      <div className="mt-4 space-y-1.5 border-t-2 border-dashed border-ink/30 pt-3 text-xs">
-        <p className="flex justify-between gap-2 text-ink/75">
+      <div className="mt-4 space-y-1.5 border-t border-dashed border-line-strong pt-3 text-xs">
+        <p className="flex justify-between gap-2 text-ink-soft">
           <span>1 reel + 2 stories</span>
           <span>₹18,000</span>
         </p>
-        <p className="flex justify-between gap-2 text-ink/75">
+        <p className="flex justify-between gap-2 text-ink-soft">
           <span>GST 18%</span>
           <span>₹3,240</span>
         </p>
@@ -48,22 +50,19 @@ function InvoiceCard({ className = '' }: { className?: string }) {
 
 function ProductCard({ className = '' }: { className?: string }) {
   return (
-    <div
-      className={`rounded-2xl border-2 border-ink bg-butter p-3 ${className}`}
-      style={{ boxShadow: '0 9px 0 0 #1a1714, 0 30px 30px rgba(26,23,20,.22)' }}
-    >
+    <div className={`rounded-2xl border border-line bg-white p-3 shadow-pop ${className}`}>
       <div className="flex aspect-[4/3] items-end rounded-xl bg-moss p-3">
-        <p className="font-display text-lg leading-tight text-paper">
+        <p className="font-display text-lg font-medium leading-tight text-white">
           Sourdough,
           <br />
           start to finish
         </p>
       </div>
       <div className="mt-3 flex items-center justify-between gap-2 px-1">
-        <span className="font-display text-2xl">₹499</span>
-        <span className="text-xs text-ink/80">Video course</span>
+        <span className="font-display text-2xl font-medium">₹499</span>
+        <span className="text-xs text-ink-soft">Video course</span>
       </div>
-      <span className="mt-3 flex items-center justify-center gap-1.5 rounded-lg border-2 border-ink bg-brand py-2 text-[13px] font-bold text-white shadow-[0_3px_0_0_#1a1714]">
+      <span className="mt-3 flex items-center justify-center gap-1.5 rounded-lg bg-brand py-2 text-[13px] font-semibold text-white">
         <Download className="h-3.5 w-3.5 shrink-0" /> Buy and download
       </span>
     </div>
@@ -74,14 +73,12 @@ function ProductCard({ className = '' }: { className?: string }) {
 export function MoneyCards() {
   return (
     <>
-      {/* Phones: full-size cards, slightly scattered */}
       <div className="mx-auto w-full max-w-[300px] space-y-5 sm:hidden">
         <ProductCard className="mx-auto w-[86%] -rotate-1" />
         <BookingCard className="mr-auto w-[86%] rotate-1" />
         <InvoiceCard className="ml-auto w-[86%] -rotate-1" />
       </div>
 
-      {/* Wider screens: a fan of cards standing in space */}
       <div className="relative mx-auto hidden h-[400px] w-full max-w-[540px] sm:block">
         <div className="absolute left-0 top-14 z-10">
           <BookingCard className="fan-left w-[205px]" />

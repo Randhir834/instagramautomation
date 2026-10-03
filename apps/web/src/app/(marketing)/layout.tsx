@@ -1,45 +1,63 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { Brand } from '@/components/layout/Brand';
 import { PushButton } from '@/components/marketing/PushButton';
 import { APP_NAME } from '@/lib/utils';
 
 const NAV = [
   { href: '/#how', label: 'How it works' },
-  { href: '/#features', label: "What's inside" },
+  { href: '/#features', label: 'Features' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/#faq', label: 'Questions' },
+  { href: '/#faq', label: 'FAQ' },
 ];
 
-function Wordmark() {
-  return (
-    <Link href="/" className="flex items-baseline gap-1 font-display text-xl font-semibold">
-      {APP_NAME}
-      <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
-    </Link>
-  );
-}
+const FOOTER = [
+  {
+    title: 'Product',
+    links: [
+      { href: '/#how', label: 'How it works' },
+      { href: '/#features', label: 'Features' },
+      { href: '/pricing', label: 'Pricing' },
+    ],
+  },
+  {
+    title: 'Get started',
+    links: [
+      { href: '/signup', label: 'Create an account' },
+      { href: '/login', label: 'Log in' },
+    ],
+  },
+  {
+    title: 'Legal',
+    links: [
+      { href: '/privacy', label: 'Privacy' },
+      { href: '/terms', label: 'Terms' },
+      { href: '/data-deletion', label: 'Delete my data' },
+    ],
+  },
+];
 
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="paper-grain flex min-h-screen flex-col overflow-x-clip bg-paper text-ink">
-      <header className="sticky top-0 z-40 border-b-2 border-ink bg-paper/95 backdrop-blur">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-paper text-ink">
+      <header className="sticky top-0 z-40 border-b border-line/80 bg-paper/85 backdrop-blur-md">
         <div className="container flex h-16 items-center justify-between gap-4">
-          <Wordmark />
-          <nav className="hidden items-center gap-1 text-sm md:flex">
+          <Brand />
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
             {NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-lg px-3 py-1.5 font-medium text-ink transition-colors hover:bg-butter"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-white hover:text-ink"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="hidden rounded-lg px-3 py-1.5 font-medium text-ink transition-colors hover:bg-butter md:block"
+              className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-white md:block"
             >
               Log in
             </Link>
@@ -48,13 +66,16 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             </PushButton>
           </div>
         </div>
-        {/* Phones: the same links, always visible under the bar */}
-        <nav className="flex flex-wrap items-center justify-center gap-x-1 border-t border-ink/15 px-3 py-1.5 text-sm md:hidden">
+        {/* Phones: the same links in a row under the bar */}
+        <nav
+          className="flex flex-wrap items-center justify-center gap-x-1 border-t border-line/80 px-3 py-1 md:hidden"
+          aria-label="Main"
+        >
           {[...NAV, { href: '/login', label: 'Log in' }].map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-2.5 py-1.5 font-medium text-ink hover:bg-butter"
+              className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-white"
             >
               {item.label}
             </Link>
@@ -64,58 +85,35 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t-2 border-ink">
-        <div className="container grid gap-8 py-12 sm:grid-cols-[1.4fr_1fr_1fr]">
-          <div>
-            <Wordmark />
-            <p className="mt-3 max-w-xs text-sm text-ink/75">
-              Comment replies, DMs, a small store, bookings and invoices. One login for the boring
+      <footer className="border-t border-line bg-white">
+        <div className="container grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]">
+          <div className="sm:col-span-2 lg:col-span-1">
+            <Brand />
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
+              Comment replies, DMs, a small store, bookings and invoices. One place for the busy
               half of being a creator.
             </p>
           </div>
-          <div className="text-sm">
-            <p className="mb-3 font-medium">Product</p>
-            <ul className="space-y-2 text-ink/75">
-              <li>
-                <Link href="/#how" className="hover:text-ink">
-                  How it works
-                </Link>
-              </li>
-              <li>
-                <Link href="/pricing" className="hover:text-ink">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/signup" className="hover:text-ink">
-                  Create an account
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div className="text-sm">
-            <p className="mb-3 font-medium">The legal bit</p>
-            <ul className="space-y-2 text-ink/75">
-              <li>
-                <Link href="/privacy" className="hover:text-ink">
-                  Privacy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-ink">
-                  Terms
-                </Link>
-              </li>
-              <li>
-                <Link href="/data-deletion" className="hover:text-ink">
-                  Delete my data
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {FOOTER.map((group) => (
+            <div key={group.title}>
+              <p className="text-sm font-semibold text-ink">{group.title}</p>
+              <ul className="mt-3 space-y-2.5 text-sm">
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-ink-soft transition-colors hover:text-ink"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
-        <div className="border-t border-ink/10">
-          <p className="container py-5 text-xs text-ink/75">
+        <div className="border-t border-line">
+          <p className="container py-5 text-[13px] text-ink-soft">
             © {new Date().getFullYear()} {APP_NAME}. Not affiliated with Instagram or Meta.
           </p>
         </div>

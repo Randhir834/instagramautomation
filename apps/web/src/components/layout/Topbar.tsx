@@ -1,20 +1,22 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
-import { LogOut, Menu, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Menu, X } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/field';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { ApiRequestError } from '@/lib/api';
 import { logout } from '@/lib/auth';
-import { NavLinks, Wordmark } from './Sidebar';
+import { Brand } from './Brand';
+import { NavLinks, UserCard } from './Sidebar';
 
+/**
+ * Phone header with a slide-down menu. On wider screens it renders nothing
+ * visible, but still watches for an expired session.
+ */
 export function Topbar() {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const { data: user, error } = useCurrentUser();
+  const pathname = usePathname();
+  const { error } = useCurrentUser();
   const [menuOpen, setMenuOpen] = useState(false);
 
   // The cookie can be present but expired; the API is the real judge.
@@ -25,57 +27,29 @@ export function Topbar() {
     }
   }, [error, router]);
 
-  async function handleLogout() {
-    await logout().catch(() => undefined);
-    queryClient.clear();
-    router.push('/login');
-  }
+  // Close the menu whenever the page changes.
+  useEffect(() => setMenuOpen(false), [pathname]);
 
   return (
-    <header className="border-b-2 border-ink bg-white">
-      <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6">
-        <div className="flex items-center gap-3 md:hidden">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-expanded={menuOpen}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-ink bg-white"
-          >
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-          <Wordmark />
-        </div>
-
-        <div className="hidden min-w-0 items-center gap-2 text-sm md:flex">
-          {user ? (
-            <>
-              <span className="font-semibold">{user.name}</span>
-              <Badge tone={user.plan === 'FREE' ? 'neutral' : 'yellow'}>{user.plan}</Badge>
-            </>
-          ) : null}
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-          className="hidden md:inline-flex"
+    <header className="sticky top-0 z-30 border-b border-line bg-white/95 backdrop-blur md:hidden">
+      <div className="flex h-14 items-center justify-between gap-3 px-4">
+        <Brand href="/dashboard" />
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-line-strong bg-white text-ink shadow-xs"
         >
-          <LogOut className="h-4 w-4" />
-          Log out
-        </Button>
+          {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
 
       {menuOpen ? (
-        <div className="border-t-2 border-ink p-3 md:hidden">
+        <div className="max-h-[calc(100vh-3.5rem)] overflow-y-auto border-t border-line px-3 pb-4 pt-3 animate-fade-up">
           <NavLinks onNavigate={() => setMenuOpen(false)} />
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t-2 border-ink/15 pt-3">
-            {user ? <span className="break-all text-sm font-semibold">{user.name}</span> : null}
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" />
-              Log out
-            </Button>
+          <div className="mt-4">
+            <UserCard />
           </div>
         </div>
       ) : null}

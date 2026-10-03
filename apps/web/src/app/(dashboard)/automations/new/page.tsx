@@ -9,7 +9,8 @@ export default function NewAutomationPage() {
     <>
       <PageHeader
         title="New automation"
-        description="Pick a post, set keywords and write your replies."
+        description="Pick a trigger, write your replies, and switch it on."
+        back={{ href: '/automations', label: 'Automations' }}
       />
       <AutomationForm />
     </>

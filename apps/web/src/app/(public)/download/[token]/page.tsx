@@ -1,7 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { AlertCircle, CheckCircle2, Download, Loader2 } from 'lucide-react';
 import { use, useState } from 'react';
+import { PublicMessage } from '@/components/layout/PublicMessage';
 import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/field';
 import { ApiRequestError, apiGet, apiPost, errorMessage } from '@/lib/api';
@@ -40,52 +42,53 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
     }
   }
 
-  if (isLoading) return <p className="text-center text-ink/75">Loading…</p>;
+  if (isLoading) {
+    return (
+      <p className="flex items-center justify-center gap-2 text-ink-soft">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+      </p>
+    );
+  }
 
   if (error || !data) {
     const missing = error instanceof ApiRequestError && error.status === 404;
     return (
-      <div className="rounded-2xl border-2 border-ink bg-white p-8 text-center">
-        <h1 className="font-display text-3xl">
-          {missing ? 'This download link is not valid' : 'Something went wrong'}
-        </h1>
-        <p className="mt-2 text-ink/75">
-          {missing
-            ? 'Open the link from your purchase email again, and make sure it was copied in full.'
-            : errorMessage(error)}
+      <PublicMessage
+        icon={AlertCircle}
+        title={missing ? 'This download link isn’t valid' : 'Something went wrong'}
+      >
+        {missing
+          ? 'Open the link from your purchase email again, and make sure it was copied in full.'
+          : errorMessage(error)}
+      </PublicMessage>
+    );
+  }
+
+  if (!data.isPaid) {
+    return (
+      <PublicMessage icon={Loader2} eyebrow="Confirming your payment" title={data.title}>
+        <p>
+          This usually takes a few seconds, and this page updates on its own. If you closed the
+          payment window without paying, go back and try again.
         </p>
-      </div>
+      </PublicMessage>
     );
   }
 
   return (
-    <div className="slab rounded-2xl bg-white p-6 text-center sm:p-10">
-      <p className="text-sm font-bold uppercase tracking-wide text-moss">
-        {data.isPaid ? 'Payment received' : 'Confirming your payment'}
+    <PublicMessage icon={CheckCircle2} tone="success" eyebrow="Payment received" title={data.title}>
+      <p>from {data.sellerName}</p>
+      <Button size="lg" className="mt-7" onClick={handleDownload} disabled={busy}>
+        <Download /> {busy ? 'Preparing…' : 'Download your file'}
+      </Button>
+      <p className="mt-5 text-[13px]">
+        We emailed you a link to this page too, so you can download again any time.
       </p>
-      <h1 className="mt-2 break-words font-display text-4xl leading-tight">{data.title}</h1>
-      <p className="mt-1 text-ink/75">from {data.sellerName}</p>
-
-      {data.isPaid ? (
-        <>
-          <Button size="lg" className="mt-8" onClick={handleDownload} disabled={busy}>
-            {busy ? 'Preparing…' : 'Download your file'}
-          </Button>
-          <p className="mt-4 text-sm text-ink/75">
-            We also emailed you this page. You can come back and download again any time.
-          </p>
-        </>
-      ) : (
-        <p className="mx-auto mt-6 max-w-md text-ink/80">
-          This usually takes a few seconds. The button will appear here on its own. If you closed
-          the payment window without paying, go back and try again.
-        </p>
-      )}
       {problem ? (
-        <Notice tone="error" className="mt-6 text-left">
+        <Notice tone="error" className="mt-5 text-left">
           {problem}
         </Notice>
       ) : null}
-    </div>
+    </PublicMessage>
   );
 }

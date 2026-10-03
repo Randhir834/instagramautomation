@@ -1,3 +1,4 @@
+import { FileDown } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ const STATUS = {
   VOID: { label: 'Void', tone: 'red' },
 } as const;
 
-/** Public invoice view. */
+/** Public invoice view, laid out like a printed document. */
 export default async function PublicInvoicePage({ params }: Props) {
   const invoice = await load((await params).id);
   if (!invoice) notFound();
@@ -33,62 +34,82 @@ export default async function PublicInvoicePage({ params }: Props) {
   const status = STATUS[invoice.status];
 
   return (
-    <article className="slab rounded-2xl bg-white p-5 sm:p-8">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl">Invoice</h1>
-          <p className="text-ink/75">{invoice.number}</p>
-        </div>
-        <div className="text-left sm:text-right">
-          <p className="break-words font-semibold">{invoice.sellerName}</p>
-          <p className="text-sm text-ink/75">Issued {formatDate(invoice.issuedAt)}</p>
-          <Badge tone={status.tone} className="mt-1">
-            {status.label}
-          </Badge>
-        </div>
-      </header>
-
-      <section className="mt-6">
-        <p className="text-sm text-ink/75">Billed to</p>
-        <p className="break-words font-semibold">{invoice.clientName}</p>
-      </section>
-
-      <ul className="mt-6 divide-y-2 divide-ink/10 border-y-2 border-ink">
-        {invoice.items.map((item, i) => (
-          <li key={i} className="flex flex-wrap justify-between gap-x-6 gap-y-1 py-3">
-            <div className="min-w-0">
-              <p className="break-words font-medium">{item.description}</p>
-              <p className="text-sm text-ink/75">
-                {item.quantity} × {money(item.unitPrice)}
+    <>
+      <article className="overflow-hidden rounded-xl border border-line bg-white shadow-lift">
+        <div className="h-1.5 bg-brand" aria-hidden />
+        <div className="p-6 sm:p-10">
+          <header className="flex flex-wrap items-start justify-between gap-6">
+            <div>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-soft">
+                Invoice
               </p>
+              <h1 className="mt-1 font-display text-[32px] font-medium leading-none tracking-tight">
+                {invoice.number}
+              </h1>
+              <Badge dot tone={status.tone} className="mt-3">
+                {status.label}
+              </Badge>
             </div>
-            <p className="font-semibold">{money(Math.round(item.quantity * item.unitPrice))}</p>
-          </li>
-        ))}
-      </ul>
+            <div className="text-left sm:text-right">
+              <p className="font-semibold text-ink [overflow-wrap:anywhere]">
+                {invoice.sellerName}
+              </p>
+              <p className="text-sm text-ink-soft">Issued {formatDate(invoice.issuedAt)}</p>
+            </div>
+          </header>
 
-      <dl className="ml-auto mt-5 max-w-xs space-y-1.5">
-        <div className="flex justify-between gap-4">
-          <dt>Subtotal</dt>
-          <dd>{money(invoice.subtotal)}</dd>
-        </div>
-        <div className="flex justify-between gap-4">
-          <dt>Tax ({invoice.taxPercent}%)</dt>
-          <dd>{money(invoice.tax)}</dd>
-        </div>
-        <div className="flex justify-between gap-4 border-t-2 border-ink pt-2 text-xl font-bold">
-          <dt>Total</dt>
-          <dd>{money(invoice.total)}</dd>
-        </div>
-      </dl>
+          <section className="mt-8 rounded-lg bg-paper px-4 py-3">
+            <p className="text-[13px] text-ink-soft">Billed to</p>
+            <p className="font-semibold text-ink [overflow-wrap:anywhere]">{invoice.clientName}</p>
+          </section>
 
-      <div className="mt-8">
+          <div className="mt-8">
+            <div className="hidden grid-cols-[1fr_auto_auto] gap-6 border-b border-ink pb-2 text-[13px] font-semibold text-ink-soft sm:grid">
+              <span>Description</span>
+              <span className="w-24 text-right">Qty × price</span>
+              <span className="w-28 text-right">Amount</span>
+            </div>
+            <ul className="divide-y divide-line">
+              {invoice.items.map((item, i) => (
+                <li key={i} className="grid gap-x-6 gap-y-1 py-3.5 sm:grid-cols-[1fr_auto_auto]">
+                  <span className="font-medium text-ink [overflow-wrap:anywhere]">
+                    {item.description}
+                  </span>
+                  <span className="text-sm text-ink-soft sm:w-24 sm:text-right">
+                    {item.quantity} × {money(item.unitPrice)}
+                  </span>
+                  <span className="font-semibold tabular-nums text-ink sm:w-28 sm:text-right">
+                    {money(Math.round(item.quantity * item.unitPrice))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <dl className="ml-auto mt-6 max-w-xs space-y-2 border-t border-line pt-4 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-soft">Subtotal</dt>
+              <dd className="tabular-nums">{money(invoice.subtotal)}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-soft">Tax ({invoice.taxPercent}%)</dt>
+              <dd className="tabular-nums">{money(invoice.tax)}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-t border-ink pt-3 text-lg font-semibold">
+              <dt>Total</dt>
+              <dd className="tabular-nums">{money(invoice.total)}</dd>
+            </div>
+          </dl>
+        </div>
+      </article>
+
+      <div className="mt-6 flex justify-center">
         <Button variant="outline" asChild>
           <a href={`${API_URL}/public/invoice/${invoice.id}/pdf`} target="_blank" rel="noreferrer">
-            Download PDF
+            <FileDown /> Download PDF
           </a>
         </Button>
       </div>
-    </article>
+    </>
   );
 }

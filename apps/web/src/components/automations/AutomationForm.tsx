@@ -6,45 +6,57 @@ import {
   type TriggerType,
   updateAutomationSchema,
 } from '@repo/shared';
-import { Plus, X } from 'lucide-react';
+import { AtSign, Instagram, MessageCircle, Plus, X, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { EmptyState, Field, Notice, Select } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useAccounts } from '@/hooks/useAccounts';
 import { type Automation, type AutomationPayload, useSaveAutomation } from '@/hooks/useAutomations';
 import { errorMessage } from '@/lib/api';
+import { cn } from '@/lib/utils';
+import { FlowPreview } from './FlowPreview';
 import { KeywordInput } from './KeywordInput';
 import { PostPicker } from './PostPicker';
 import { emptyStep, newKey, type StepDraft, StepEditor } from './StepEditor';
 
-const TRIGGERS: { value: TriggerType; label: string; help: string }[] = [
-  { value: 'COMMENT', label: 'A comment on a post', help: 'The classic comment-to-DM.' },
-  { value: 'DM_KEYWORD', label: 'A DM to you', help: 'They message you a keyword.' },
-  {
-    value: 'STORY_REPLY',
-    label: 'A reply to your story',
-    help: 'A story reply with a keyword.',
-  },
+const TRIGGERS: { value: TriggerType; label: string; help: string; icon: LucideIcon }[] = [
+  { value: 'COMMENT', label: 'Comment', help: 'On a post or reel', icon: MessageCircle },
+  { value: 'DM_KEYWORD', label: 'DM', help: 'Sent to your inbox', icon: AtSign },
+  { value: 'STORY_REPLY', label: 'Story reply', help: 'A reply to a story', icon: Instagram },
 ];
 
-function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+function Section({
+  n,
+  title,
+  description,
+  children,
+}: {
+  n: number;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="rounded-xl border-2 border-ink bg-white p-5">
-      <h2 className="mb-4 flex items-center gap-3 font-display text-xl">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-butter text-base">
+    <Card>
+      <div className="flex items-start gap-3 border-b border-line px-5 py-4">
+        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-paper-deep text-xs font-bold text-ink">
           {n}
         </span>
-        {title}
-      </h2>
-      {children}
-    </section>
+        <div>
+          <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
+          {description ? <p className="mt-0.5 text-sm text-ink-soft">{description}</p> : null}
+        </div>
+      </div>
+      <div className="space-y-5 p-5">{children}</div>
+    </Card>
   );
 }
 
-/** Step-by-step builder: account, trigger, keywords, public reply, DM steps. */
+/** Step-by-step builder with a live preview of what the follower receives. */
 export function AutomationForm({ automation }: { automation?: Automation }) {
   const router = useRouter();
   const { data: accounts, isLoading: loadingAccounts } = useAccounts();
@@ -68,6 +80,7 @@ export function AutomationForm({ automation }: { automation?: Automation }) {
 
   const active = accounts?.filter((a) => a.isActive) ?? [];
   const accountId = igAccountId || active[0]?.id || '';
+  const account = accounts?.find((a) => a.id === (automation?.igAccountId ?? accountId));
   const isComment = triggerType === 'COMMENT';
 
   function handleSubmit(e: React.FormEvent) {
@@ -107,10 +120,11 @@ export function AutomationForm({ automation }: { automation?: Automation }) {
   if (!automation && !loadingAccounts && active.length === 0) {
     return (
       <EmptyState
+        icon={Instagram}
         title="Connect Instagram first"
         action={
           <Button asChild>
-            <Link href="/accounts">Go to Instagram accounts</Link>
+            <Link href="/accounts">Go to Instagram</Link>
           </Button>
         }
       >
@@ -125,11 +139,16 @@ export function AutomationForm({ automation }: { automation?: Automation }) {
       .map(([path, message]) => [path.replace('steps.', ''), message]),
   );
   const hasErrors = Object.keys(errors).length > 0;
+  let n = 0;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      <Section n={1} title="When this happens">
-        <div className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]"
+    >
+      <div className="min-w-0 space-y-5">
+        <Section n={++n} title="Trigger" description="What should start this automation?">
           {!automation && active.length > 1 ? (
             <Field label="Instagram account" htmlFor="account" error={errors.igAccountId}>
               <Select
@@ -146,30 +165,56 @@ export function AutomationForm({ automation }: { automation?: Automation }) {
             </Field>
           ) : null}
 
-          <Field label="Trigger" htmlFor="trigger">
-            <Select
-              id="trigger"
-              value={triggerType}
-              onChange={(e) => setTriggerType(e.target.value as TriggerType)}
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-ink" id="trigger-label">
+              When someone sends a
+            </p>
+            <div
+              className="grid gap-2 sm:grid-cols-3"
+              role="radiogroup"
+              aria-labelledby="trigger-label"
             >
-              {TRIGGERS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
+              {TRIGGERS.map((t) => {
+                const selected = triggerType === t.value;
+                const Icon = t.icon;
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setTriggerType(t.value)}
+                    className={cn(
+                      'flex items-center gap-3 rounded-[10px] border px-3 py-2.5 text-left transition-[border-color,background-color,box-shadow]',
+                      selected
+                        ? 'border-brand bg-brand-tint/50 ring-4 ring-brand/10'
+                        : 'border-line-strong bg-white hover:border-[#bfb6a6]',
+                    )}
+                  >
+                    <Icon
+                      className={cn('h-4 w-4 shrink-0', selected ? 'text-brand' : 'text-ink-soft')}
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-ink">{t.label}</span>
+                      <span className="block text-[13px] text-ink-soft">{t.help}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {isComment && accountId ? (
-            <Field label="On which post?">
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-ink">On which post</p>
               <PostPicker igAccountId={accountId} value={postId} onChange={setPostId} />
-            </Field>
+            </div>
           ) : null}
 
           <Field
-            label="With one of these keywords"
+            label="Containing a keyword"
             htmlFor="keywords"
-            hint="Type a word and press Enter. Capital letters do not matter."
+            hint="Press Enter after each one. Capital letters don’t matter."
             error={errors.keywords}
           >
             <KeywordInput
@@ -177,11 +222,12 @@ export function AutomationForm({ automation }: { automation?: Automation }) {
               value={keywords}
               onChange={setKeywords}
               placeholder="price, link, how much"
+              invalid={Boolean(errors.keywords)}
             />
           </Field>
 
           <Field
-            label="How strict?"
+            label="Match"
             htmlFor="match"
             hint={
               matchType === 'CONTAINS'
@@ -193,102 +239,121 @@ export function AutomationForm({ automation }: { automation?: Automation }) {
               id="match"
               value={matchType}
               onChange={(e) => setMatchType(e.target.value as MatchType)}
+              className="sm:max-w-xs"
             >
               <option value="CONTAINS">Contains the keyword</option>
               <option value="EXACT">Is exactly the keyword</option>
             </Select>
           </Field>
-        </div>
-      </Section>
-
-      {isComment ? (
-        <Section n={2} title="Reply publicly under the comment">
-          <p className="mb-3 text-sm text-ink/75">
-            Optional. Add a few versions and we pick one at random each time, so your comments do
-            not all look the same.
-          </p>
-          <div className="space-y-2">
-            {publicReplies.map((reply, i) => (
-              <div key={i} className="flex gap-2">
-                <Input
-                  value={reply}
-                  maxLength={300}
-                  aria-label={`Public reply ${i + 1}`}
-                  placeholder="Sent it to your DMs!"
-                  onChange={(e) =>
-                    setPublicReplies(publicReplies.map((r, j) => (j === i ? e.target.value : r)))
-                  }
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Remove public reply ${i + 1}`}
-                  onClick={() => setPublicReplies(publicReplies.filter((_, j) => j !== i))}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-          {publicReplies.length < 10 ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => setPublicReplies([...publicReplies, ''])}
-            >
-              <Plus className="h-4 w-4" /> Add a version
-            </Button>
-          ) : null}
         </Section>
-      ) : null}
 
-      <Section n={isComment ? 3 : 2} title="Then send these in their DMs">
-        <p className="mb-4 text-sm text-ink/75">
-          {isComment
-            ? 'Step 1 is sent straight away. Instagram only lets us send the next steps after the person replies, so each later step goes out when they answer.'
-            : 'Steps are sent in order. A step that asks something waits for their answer.'}
-        </p>
-        {errors.steps ? (
-          <Notice tone="error" className="mb-3">
-            {errors.steps}
-          </Notice>
+        {isComment ? (
+          <Section
+            n={++n}
+            title="Public reply"
+            description="Optional. We rotate between versions so your comments look natural."
+          >
+            <div className="space-y-2">
+              {publicReplies.map((reply, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    value={reply}
+                    maxLength={300}
+                    aria-label={`Public reply ${i + 1}`}
+                    placeholder="Sent it to your DMs!"
+                    onChange={(e) =>
+                      setPublicReplies(publicReplies.map((r, j) => (j === i ? e.target.value : r)))
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="mt-1"
+                    aria-label={`Remove public reply ${i + 1}`}
+                    onClick={() => setPublicReplies(publicReplies.filter((_, j) => j !== i))}
+                  >
+                    <X />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            {publicReplies.length < 10 ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="-ml-2"
+                onClick={() => setPublicReplies([...publicReplies, ''])}
+              >
+                <Plus /> Add a version
+              </Button>
+            ) : null}
+          </Section>
         ) : null}
-        <StepEditor
-          steps={steps}
-          onChange={setSteps}
-          errors={stepErrors}
-          firstIsPrivateReply={isComment}
-        />
-      </Section>
 
-      <Section n={isComment ? 4 : 3} title="Name it">
-        <Field label="Name" htmlFor="name" hint="Only you see this." error={errors.name}>
-          <Input
-            id="name"
-            value={name}
-            maxLength={100}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Sourdough course reel"
+        <Section
+          n={++n}
+          title="Direct messages"
+          description={
+            isComment
+              ? 'Step 1 goes out right away. Instagram only allows the next steps after they reply.'
+              : 'Sent in order. Steps that ask a question wait for the answer.'
+          }
+        >
+          {errors.steps ? <Notice tone="error">{errors.steps}</Notice> : null}
+          <StepEditor
+            steps={steps}
+            onChange={setSteps}
+            errors={stepErrors}
+            firstIsPrivateReply={isComment}
           />
-        </Field>
-      </Section>
+        </Section>
 
-      {hasErrors ? (
-        <Notice tone="error">Some things need fixing above before this can be saved.</Notice>
-      ) : null}
-      {save.isError ? <Notice tone="error">{errorMessage(save.error)}</Notice> : null}
+        <Section n={++n} title="Name">
+          <Field
+            label="Automation name"
+            htmlFor="name"
+            hint="Only you see this."
+            error={errors.name}
+          >
+            <Input
+              id="name"
+              value={name}
+              maxLength={100}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Sourdough course reel"
+            />
+          </Field>
+        </Section>
 
-      <div className="flex flex-wrap gap-3">
-        <Button type="submit" size="lg" disabled={save.isPending}>
-          {save.isPending ? 'Saving…' : automation ? 'Save changes' : 'Turn it on'}
-        </Button>
-        <Button type="button" variant="outline" size="lg" asChild>
-          <Link href="/automations">Cancel</Link>
-        </Button>
+        {hasErrors ? (
+          <Notice tone="error">A few things need fixing above before this can be saved.</Notice>
+        ) : null}
+        {save.isError ? <Notice tone="error">{errorMessage(save.error)}</Notice> : null}
+
+        <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
+          <Button type="submit" size="lg" disabled={save.isPending}>
+            {save.isPending ? 'Saving…' : automation ? 'Save changes' : 'Turn it on'}
+          </Button>
+          <Button type="button" variant="ghost" size="lg" asChild>
+            <Link href="/automations">Cancel</Link>
+          </Button>
+        </div>
       </div>
+
+      <aside className="hidden lg:block">
+        <div className="sticky top-8">
+          <p className="mb-3 text-center text-[13px] font-medium text-ink-soft">Live preview</p>
+          <FlowPreview
+            username={account?.username ?? 'you'}
+            triggerType={triggerType}
+            keyword={keywords[0]}
+            publicReply={isComment ? publicReplies.find((r) => r.trim()) : undefined}
+            steps={steps}
+          />
+        </div>
+      </aside>
     </form>
   );
 }

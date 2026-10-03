@@ -1,12 +1,13 @@
 'use client';
 
 import { calculateInvoiceTotals, createInvoiceSchema } from '@repo/shared';
-import { Plus, X } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Field, Notice } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useCreateInvoice } from '@/hooks/useInvoices';
@@ -63,33 +64,49 @@ export default function NewInvoicePage() {
 
   return (
     <>
-      <PageHeader title="New invoice" description="Add your client, line items and tax." />
-      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-        <section className="grid gap-4 rounded-xl border-2 border-ink bg-white p-5 sm:grid-cols-2">
-          <Field label="Client or brand name" htmlFor="clientName">
-            <Input
-              id="clientName"
-              value={clientName}
-              maxLength={120}
-              onChange={(e) => setClientName(e.target.value)}
-            />
-          </Field>
-          <Field label="Client email (optional)" htmlFor="clientEmail">
-            <Input
-              id="clientEmail"
-              type="email"
-              value={clientEmail}
-              onChange={(e) => setClientEmail(e.target.value)}
-            />
-          </Field>
-        </section>
+      <PageHeader
+        title="New invoice"
+        description="It gets the next invoice number automatically."
+        back={{ href: '/invoices', label: 'Invoices' }}
+      />
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]"
+      >
+        <div className="min-w-0 space-y-5">
+          <Card>
+            <CardHeader title="Bill to" />
+            <CardContent className="grid gap-5 sm:grid-cols-2">
+              <Field label="Client or brand" htmlFor="clientName">
+                <Input
+                  id="clientName"
+                  value={clientName}
+                  maxLength={120}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Bake Co"
+                />
+              </Field>
+              <Field label="Client email" htmlFor="clientEmail" aside="Optional">
+                <Input
+                  id="clientEmail"
+                  type="email"
+                  value={clientEmail}
+                  onChange={(e) => setClientEmail(e.target.value)}
+                  placeholder="accounts@bake.co"
+                />
+              </Field>
+            </CardContent>
+          </Card>
 
-        <section className="rounded-xl border-2 border-ink bg-white p-5">
-          <h2 className="font-display text-xl">Items</h2>
-          <div className="mt-4 space-y-4">
-            {items.map((item, i) => (
-              <div key={i} className="rounded-lg border-2 border-ink/15 p-3">
-                <div className="grid gap-3 sm:grid-cols-[1fr_6rem_9rem_auto] sm:items-end">
+          <Card>
+            <CardHeader title="Line items" />
+            <CardContent className="space-y-3">
+              {items.map((item, i) => (
+                <div
+                  key={i}
+                  className="grid gap-3 rounded-[10px] border border-line bg-paper/40 p-3 sm:grid-cols-[minmax(0,1fr)_5.5rem_8.5rem_auto] sm:items-end"
+                >
                   <Field label="Description" htmlFor={`desc-${i}`}>
                     <Input
                       id={`desc-${i}`}
@@ -110,88 +127,98 @@ export default function NewInvoicePage() {
                       onChange={(e) => setItem(i, { quantity: e.target.value })}
                     />
                   </Field>
-                  <Field label="Price each (₹)" htmlFor={`price-${i}`}>
-                    <Input
-                      id={`price-${i}`}
-                      type="number"
-                      min={0}
-                      step="any"
-                      inputMode="decimal"
-                      value={item.rupees}
-                      onChange={(e) => setItem(i, { rupees: e.target.value })}
-                    />
+                  <Field label="Price each" htmlFor={`price-${i}`}>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-ink-soft">
+                        ₹
+                      </span>
+                      <Input
+                        id={`price-${i}`}
+                        type="number"
+                        min={0}
+                        step="any"
+                        inputMode="decimal"
+                        value={item.rupees}
+                        className="pl-7"
+                        onChange={(e) => setItem(i, { rupees: e.target.value })}
+                      />
+                    </div>
                   </Field>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
+                    className="mb-1 hover:text-brand-dark disabled:bg-transparent disabled:opacity-40"
                     aria-label={`Remove item ${i + 1}`}
                     disabled={items.length === 1}
                     onClick={() => setItems(items.filter((_, j) => j !== i))}
                   >
-                    <X className="h-4 w-4" />
+                    <Trash2 />
                   </Button>
                 </div>
-              </div>
-            ))}
-          </div>
-          {items.length < 50 ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => setItems([...items, blankItem()])}
-            >
-              <Plus className="h-4 w-4" /> Add item
-            </Button>
-          ) : null}
-        </section>
+              ))}
+              {items.length < 50 ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="-ml-2"
+                  onClick={() => setItems([...items, blankItem()])}
+                >
+                  <Plus /> Add item
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
 
-        <section className="rounded-xl border-2 border-ink bg-white p-5">
-          <Field
-            label="Tax %"
-            htmlFor="tax"
-            hint="For example 18 for GST. Use 0 for none."
-            className="max-w-[12rem]"
-          >
-            <Input
-              id="tax"
-              type="number"
-              min={0}
-              max={100}
-              step="any"
-              inputMode="decimal"
-              value={taxPercent}
-              onChange={(e) => setTaxPercent(e.target.value)}
-            />
-          </Field>
-          <dl className="mt-5 max-w-xs space-y-1.5 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt>Subtotal</dt>
-              <dd>{formatMoney(totals.subtotal)}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Tax</dt>
-              <dd>{formatMoney(totals.tax)}</dd>
-            </div>
-            <div className="flex justify-between gap-4 border-t-2 border-ink pt-2 text-lg font-bold">
-              <dt>Total</dt>
-              <dd>{formatMoney(totals.total)}</dd>
-            </div>
-          </dl>
-        </section>
+          {problem ? <Notice tone="error">{problem}</Notice> : null}
+          {create.isError ? <Notice tone="error">{errorMessage(create.error)}</Notice> : null}
+        </div>
 
-        {problem ? <Notice tone="error">{problem}</Notice> : null}
-        {create.isError ? <Notice tone="error">{errorMessage(create.error)}</Notice> : null}
-
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" size="lg" disabled={create.isPending}>
-            {create.isPending ? 'Saving…' : 'Save invoice'}
-          </Button>
-          <Button type="button" variant="outline" size="lg" asChild>
-            <Link href="/invoices">Cancel</Link>
-          </Button>
+        <div className="lg:sticky lg:top-8 lg:self-start">
+          <Card>
+            <CardHeader title="Summary" />
+            <CardContent>
+              <Field label="Tax" htmlFor="tax" hint="18 for GST. Use 0 for none.">
+                <div className="relative">
+                  <Input
+                    id="tax"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="any"
+                    inputMode="decimal"
+                    value={taxPercent}
+                    onChange={(e) => setTaxPercent(e.target.value)}
+                    className="pr-8"
+                  />
+                  <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[15px] text-ink-soft">
+                    %
+                  </span>
+                </div>
+              </Field>
+              <dl className="mt-5 space-y-2 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-ink-soft">Subtotal</dt>
+                  <dd className="tabular-nums">{formatMoney(totals.subtotal)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-ink-soft">Tax</dt>
+                  <dd className="tabular-nums">{formatMoney(totals.tax)}</dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-line pt-3 text-base font-semibold">
+                  <dt>Total</dt>
+                  <dd className="tabular-nums">{formatMoney(totals.total)}</dd>
+                </div>
+              </dl>
+              <Button type="submit" size="lg" className="mt-5 w-full" disabled={create.isPending}>
+                {create.isPending ? 'Saving…' : 'Save invoice'}
+              </Button>
+              <Button type="button" variant="ghost" className="mt-2 w-full" asChild>
+                <Link href="/invoices">Cancel</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </form>
     </>
