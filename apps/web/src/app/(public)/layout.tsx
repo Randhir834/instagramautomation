@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { LogoMark } from '@/components/layout/Brand';
 import { APP_NAME } from '@/lib/utils';
 
 /** Minimal chrome for pages followers see (store, booking, invoice, download). */
@@ -14,7 +15,8 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           href="/"
           className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1.5 shadow-xs transition-colors hover:text-ink"
         >
-          Made with <span className="font-semibold text-ink">{APP_NAME}</span>
+          Made with <LogoMark className="h-4 w-4" />
+          <span className="font-semibold text-ink">{APP_NAME}</span>
         </Link>
       </footer>
     </div>

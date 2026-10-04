@@ -1,7 +1,24 @@
 import Link from 'next/link';
 import { APP_NAME, cn } from '@/lib/utils';
 
-/** The product name with its small mark. Used in every header. */
+/** The logo: a comment bubble with a send arrow inside (comment in, DM out). */
+export function LogoMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden>
+      <rect width="32" height="32" rx="8" className="fill-brand" />
+      <path
+        fill="#fff"
+        d="M9 6.5h14a4.5 4.5 0 0 1 4.5 4.5v8.5A4.5 4.5 0 0 1 23 24h-8.6l-4.7 3.9c-.5.4-1.2 0-1.2-.6V24A4.5 4.5 0 0 1 4.5 19.5V11A4.5 4.5 0 0 1 9 6.5Z"
+      />
+      <path
+        className="fill-brand"
+        d="M10.2 14.6 21.9 10.1c.5-.2 1 .3.8.8l-4.4 11.3c-.2.5-.9.5-1.1 0l-1.9-4.3a.6.6 0 0 0-.3-.3l-4.8-1.9c-.5-.2-.5-.9 0-1.1Z"
+      />
+    </svg>
+  );
+}
+
+/** The logo with the product name. Used in every header. */
 export function Brand({ href = '/', className }: { href?: string; className?: string }) {
   return (
     <Link
@@ -11,17 +28,7 @@ export function Brand({ href = '/', className }: { href?: string; className?: st
         className,
       )}
     >
-      <span
-        aria-hidden
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-brand text-white shadow-xs"
-      >
-        <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none">
-          <path
-            d="M4 6.5C4 5.1 5.1 4 6.5 4h7C14.9 4 16 5.1 16 6.5v4c0 1.4-1.1 2.5-2.5 2.5H9l-3.5 3v-3C4.7 12.7 4 11.7 4 10.5v-4Z"
-            fill="currentColor"
-          />
-        </svg>
-      </span>
+      <LogoMark className="h-7 w-7 shrink-0" />
       <span className="min-w-0">{APP_NAME}</span>
     </Link>
   );
